@@ -34,7 +34,7 @@ export function Footer({ className }: { className?: string }) {
           </div>
           
           <Link 
-            href="https://github.com/your-username/quickkey" 
+            href="https://github.com/alabiemmanuel177/quickkey" 
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center space-x-1 text-muted-foreground hover:text-foreground transition-colors"
