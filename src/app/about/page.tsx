@@ -59,10 +59,10 @@ export default function AboutPage() {
             <div className="space-y-4">
               <h2 className="text-2xl font-semibold tracking-tight">Our Mission</h2>
               <p className="text-muted-foreground leading-relaxed">
-                At QuickKey, we believe that typing is a fundamental skill in today's digital world. Our mission is to provide an engaging, effective, and enjoyable platform for users to improve their typing speed and accuracy.
+                At QuickKey, we believe that typing is a fundamental skill in today&apos;s digital world. Our mission is to provide an engaging, effective, and enjoyable platform for users to improve their typing speed and accuracy.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Whether you're a student, professional, or simply looking to enhance your typing skills, QuickKey offers a range of features designed to make your practice sessions both productive and fun.
+                Whether you&apos;re a student, professional, or simply looking to enhance your typing skills, QuickKey offers a range of features designed to make your practice sessions both productive and fun.
               </p>
             </div>
 

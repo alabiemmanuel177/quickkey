@@ -41,7 +41,7 @@ export default function TermsOfServicePage() {
 
         <h2 className="text-2xl font-semibold mt-8 mb-4">5. Disclaimer of Warranties</h2>
         <p>
-          QuickKey is provided "as is" without warranties of any kind, either express or implied.
+          QuickKey is provided &quot;as is&quot; without warranties of any kind, either express or implied.
         </p>
 
         <h2 className="text-2xl font-semibold mt-8 mb-4">6. Limitation of Liability</h2>

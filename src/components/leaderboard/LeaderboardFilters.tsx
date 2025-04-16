@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ export function LeaderboardFilters({
   filters,
   onFiltersChange,
   onRefresh,
-  isLoading
+  isLoading,
 }: LeaderboardFiltersProps) {
   const [localFilters, setLocalFilters] = useState(filters);
 
@@ -42,7 +42,7 @@ export function LeaderboardFilters({
 
   const handleFilterChange = (key: keyof typeof filters, value: string) => {
     const newFilters = { ...localFilters, [key]: value };
-    
+
     // If test type changes, reset duration to default for that type
     if (key === "testType") {
       if (value === "time") {
@@ -51,18 +51,9 @@ export function LeaderboardFilters({
         newFilters.duration = "25";
       }
     }
-    
+
     setLocalFilters(newFilters);
     onFiltersChange(newFilters);
-  };
-
-  // Get the right duration options based on test type
-  const getDurationOptions = () => {
-    if (localFilters.testType === "time") {
-      return ["15", "30", "60", "120"];
-    } else {
-      return ["10", "25", "50", "100"];
-    }
   };
 
   return (
@@ -131,10 +122,10 @@ export function LeaderboardFilters({
         </Select>
       </div>
 
-      <Button 
-        variant="outline" 
-        size="icon" 
-        onClick={onRefresh} 
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={onRefresh}
         disabled={isLoading}
         className="h-10 w-10 mt-6 md:mt-0"
       >
@@ -143,4 +134,4 @@ export function LeaderboardFilters({
       </Button>
     </div>
   );
-} 
+}

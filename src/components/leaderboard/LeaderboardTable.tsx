@@ -1,19 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { format } from "date-fns";
-import { 
-  Medal, 
-  ChevronDown, 
-  ChevronUp, 
-  ChevronsUpDown,
-  User,
-  Clock,
-  Percent,
-  Flag
-} from "lucide-react";
+import { Medal } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -22,9 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 import { LeaderboardEntry } from "@/hooks/useLeaderboard";
 
 interface LeaderboardTableProps {
@@ -32,7 +19,10 @@ interface LeaderboardTableProps {
   isLoading: boolean;
 }
 
-export function LeaderboardTable({ entries, isLoading }: LeaderboardTableProps) {
+export function LeaderboardTable({
+  entries,
+  isLoading,
+}: LeaderboardTableProps) {
   // Get appropriate icon based on rank
   const getRankIcon = (rank: number) => {
     if (rank === 1) {
@@ -61,7 +51,9 @@ export function LeaderboardTable({ entries, isLoading }: LeaderboardTableProps) 
   if (entries.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-muted-foreground">No entries found. Be the first to set a record!</p>
+        <p className="text-muted-foreground">
+          No entries found. Be the first to set a record!
+        </p>
       </div>
     );
   }
@@ -92,7 +84,9 @@ export function LeaderboardTable({ entries, isLoading }: LeaderboardTableProps) 
                 <div className="flex items-center gap-2">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={entry.userAvatar} alt={entry.userName} />
-                    <AvatarFallback>{entry.userName.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    <AvatarFallback>
+                      {entry.userName.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="font-medium">{entry.userName}</div>
                 </div>
@@ -100,7 +94,9 @@ export function LeaderboardTable({ entries, isLoading }: LeaderboardTableProps) 
               <TableCell className="font-semibold">{entry.wpm}</TableCell>
               <TableCell>{entry.accuracy}%</TableCell>
               <TableCell>{getTestTypeString(entry)}</TableCell>
-              <TableCell className="text-right">{format(new Date(entry.createdAt), "PP")}</TableCell>
+              <TableCell className="text-right">
+                {format(new Date(entry.createdAt), "PP")}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -153,4 +149,4 @@ function LeaderboardTableSkeleton() {
       </Table>
     </div>
   );
-} 
+}

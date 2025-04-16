@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Check, ChevronDown, Palette } from "lucide-react";
-import { useMonkeyTheme, MonkeyTheme } from "@/hooks/useMonkeyTheme";
+import { useMonkeyTheme } from "@/hooks/useMonkeyTheme";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import {
@@ -35,10 +35,10 @@ interface BuiltInTheme {
   isBuiltIn: boolean;
 }
 
-export function ThemeDropdown({ minimal = false, showPreview = false }: ThemeDropdownProps) {
+export function ThemeDropdown({ minimal = false }: ThemeDropdownProps) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { monkeyThemes, activeTheme, loading, changeTheme, builtInTheme } = useMonkeyTheme();
+  const { monkeyThemes, activeTheme, loading, changeTheme } = useMonkeyTheme();
   const { setTheme, theme, themes = [] } = useTheme();
   
   // Only show UI after mounting to avoid hydration errors
