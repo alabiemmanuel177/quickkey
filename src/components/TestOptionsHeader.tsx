@@ -66,9 +66,9 @@ const TestOptionsHeader: React.FC<TestOptionsHeaderProps> = ({
   const activeTimeClass = "bg-primary text-primary-foreground shadow-md font-semibold";
 
   return (
-    <div className="w-full max-w-3xl mb-4 flex flex-wrap items-center justify-between gap-2 p-2 rounded-lg border border-border bg-background">
-      <TooltipProvider>
-        <div className="flex flex-wrap items-center gap-2">
+    <div className="w-full mb-2 sm:mb-4 flex flex-wrap justify-between gap-1 sm:gap-2 p-1 sm:p-2 rounded-lg border border-border bg-background overflow-x-auto">
+      <TooltipProvider delayDuration={300}>
+        <div className="flex items-center gap-1 sm:gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle
@@ -77,15 +77,15 @@ const TestOptionsHeader: React.FC<TestOptionsHeaderProps> = ({
                 aria-label="Toggle punctuation"
                 size="sm"
                 className={cn(
-                  "transition-all duration-200",
+                  "h-7 sm:h-8 text-xs sm:text-sm min-w-6 sm:min-w-fit transition-all duration-200",
                   options.punctuation ? activeToggleClass : ""
                 )}
               >
-                <FileText className={cn("h-4 w-4 mr-1", options.punctuation && "animate-pulse duration-300")} />
+                <FileText className={cn("h-3 w-3 sm:h-4 sm:w-4 sm:mr-1", options.punctuation && "animate-pulse duration-300")} />
                 <span className="hidden sm:inline">Punctuation</span>
               </Toggle>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent className="hidden sm:block">
               <p>Include punctuation in the test</p>
             </TooltipContent>
           </Tooltip>
@@ -98,15 +98,15 @@ const TestOptionsHeader: React.FC<TestOptionsHeaderProps> = ({
                 aria-label="Toggle numbers"
                 size="sm"
                 className={cn(
-                  "transition-all duration-200",
+                  "h-7 sm:h-8 text-xs sm:text-sm min-w-6 sm:min-w-fit transition-all duration-200",
                   options.numbers ? activeToggleClass : ""
                 )}
               >
-                <Hash className={cn("h-4 w-4 mr-1", options.numbers && "animate-pulse duration-300")} />
+                <Hash className={cn("h-3 w-3 sm:h-4 sm:w-4 sm:mr-1", options.numbers && "animate-pulse duration-300")} />
                 <span className="hidden sm:inline">Numbers</span>
               </Toggle>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent className="hidden sm:block">
               <p>Include numbers in the test</p>
             </TooltipContent>
           </Tooltip>
@@ -119,12 +119,12 @@ const TestOptionsHeader: React.FC<TestOptionsHeaderProps> = ({
                     variant={options.time !== 60 ? "default" : "outline"} 
                     size="sm" 
                     className={cn(
-                      "h-8 transition-all duration-200", 
+                      "h-7 sm:h-8 text-xs sm:text-sm px-2 sm:px-3 transition-all duration-200", 
                       options.time !== 60 ? activeTimeClass : ""
                     )}
                   >
-                    <Clock className="h-4 w-4 mr-1" />
-                    <span className="hidden sm:inline">Time:</span> {options.time}s
+                    <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                    <span className="hidden xs:inline sm:inline">Time:</span> {options.time}s
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
@@ -143,13 +143,13 @@ const TestOptionsHeader: React.FC<TestOptionsHeaderProps> = ({
                 </DropdownMenuContent>
               </DropdownMenu>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent className="hidden sm:block">
               <p>Set test duration</p>
             </TooltipContent>
           </Tooltip>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle
@@ -158,15 +158,15 @@ const TestOptionsHeader: React.FC<TestOptionsHeaderProps> = ({
                 aria-label="Words mode"
                 size="sm"
                 className={cn(
-                  "transition-all duration-200",
+                  "h-7 sm:h-8 text-xs sm:text-sm min-w-6 sm:min-w-fit transition-all duration-200",
                   options.mode === "words" ? activeToggleClass : ""
                 )}
               >
-                <Type className="h-4 w-4 mr-1" />
+                <Type className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
                 <span className="hidden sm:inline">Words</span>
               </Toggle>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent className="hidden sm:block">
               <p>Test with random words</p>
             </TooltipContent>
           </Tooltip>
@@ -179,15 +179,15 @@ const TestOptionsHeader: React.FC<TestOptionsHeaderProps> = ({
                 aria-label="Quote mode"
                 size="sm"
                 className={cn(
-                  "transition-all duration-200",
+                  "h-7 sm:h-8 text-xs sm:text-sm min-w-6 sm:min-w-fit transition-all duration-200",
                   options.mode === "quote" ? activeToggleClass : ""
                 )}
               >
-                <Quote className="h-4 w-4 mr-1" />
+                <Quote className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
                 <span className="hidden sm:inline">Quote</span>
               </Toggle>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent className="hidden sm:block">
               <p>Test with famous quotes</p>
             </TooltipContent>
           </Tooltip>

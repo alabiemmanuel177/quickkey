@@ -103,10 +103,26 @@ const TypingTest: React.FC = () => {
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [testComplete, setTestComplete] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const [isClient, setIsClient] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [restartFeedback, setRestartFeedback] = useState<boolean>(false);
+
+  // Check if device is mobile
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const checkMobile = () => {
+        const isMobileDevice = window.innerWidth <= 768;
+        setIsMobile(isMobileDevice);
+      };
+      
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+      return () => window.removeEventListener('resize', checkMobile);
+    }
+  }, []);
 
   // Initialize audio context when the component mounts
   useEffect(() => {
@@ -137,21 +153,23 @@ const TypingTest: React.FC = () => {
     restartTest();
   };
 
-  // Set random text after component mounts on client and focus the container
+  // Focus input or container based on device type
   useEffect(() => {
     setIsClient(true);
     setText(getRandomText());
     
     // Short delay to ensure focus works after hydration
     const focusTimer = setTimeout(() => {
-      if (containerRef.current) {
+      if (isMobile && inputRef.current) {
+        inputRef.current.focus();
+      } else if (containerRef.current) {
         containerRef.current.focus();
-        setIsFocused(true);
       }
+      setIsFocused(true);
     }, 100);
     
     return () => clearTimeout(focusTimer);
-  }, [getRandomText]);
+  }, [getRandomText, isMobile]);
 
   // Timer for countdown
   useEffect(() => {
@@ -232,10 +250,16 @@ const TypingTest: React.FC = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
-    if (containerRef.current) {
-      containerRef.current.focus();
-    }
-  }, [getRandomText]);
+    
+    // Focus the appropriate element based on device
+    setTimeout(() => {
+      if (isMobile && inputRef.current) {
+        inputRef.current.focus();
+      } else if (containerRef.current) {
+        containerRef.current.focus();
+      }
+    }, 100);
+  }, [getRandomText, isMobile]);
 
   // Listen for custom restart event from Command Line
   useEffect(() => {
@@ -306,26 +330,64 @@ const TypingTest: React.FC = () => {
     }
   }, [text, restartTest, testComplete, soundSettings, playKeyPressSound, playErrorSound]);
 
+  // Handle input change for mobile
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (testComplete) return;
+    
+    const lastChar = e.target.value.slice(-1);
+    if (lastChar) {
+      setTypedText(prev => {
+        // Only allow typing up to the length of the test text
+        if (prev.length < text.length) {
+          const nextIndex = prev.length;
+          const isCorrect = nextIndex < text.length && lastChar === text[nextIndex];
+          
+          // Play appropriate sound based on correctness
+          if (soundSettings.enabled) {
+            if (isCorrect) {
+              playKeyPressSound();
+            } else {
+              playErrorSound();
+            }
+          }
+          
+          return prev + lastChar;
+        }
+        return prev;
+      });
+    }
+    
+    // Always clear the input field to only capture the latest character
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+  }, [text, testComplete, soundSettings, playKeyPressSound, playErrorSound]);
+
   // Set up and clean up event listeners
   useEffect(() => {
     if (!isClient) return;
     
-    const currentRef = containerRef.current;
-    if (currentRef) {
-      currentRef.focus();
+    // Try to focus the right element
+    if (isMobile && inputRef.current) {
+      inputRef.current.focus();
+    } else if (containerRef.current) {
+      containerRef.current.focus();
     }
 
-    const handleKeyDownWrapper = (e: KeyboardEvent) => {
-      if (isFocused) {
-        handleKeyDown(e);
-      }
-    };
+    // Only use keyboard event listener for non-mobile
+    if (!isMobile) {
+      const handleKeyDownWrapper = (e: KeyboardEvent) => {
+        if (isFocused) {
+          handleKeyDown(e);
+        }
+      };
 
-    window.addEventListener("keydown", handleKeyDownWrapper);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDownWrapper);
-    };
-  }, [handleKeyDown, isFocused, isClient]);
+      window.addEventListener("keydown", handleKeyDownWrapper);
+      return () => {
+        window.removeEventListener("keydown", handleKeyDownWrapper);
+      };
+    }
+  }, [handleKeyDown, isFocused, isClient, isMobile]);
 
   // Generate character spans with appropriate styling based on typing status
   const renderText = () => {
@@ -370,25 +432,49 @@ const TypingTest: React.FC = () => {
     <>
       <TestOptionsHeader options={testOptions} onChange={handleOptionsChange} />
       
+      {/* Hidden input for mobile keyboards */}
+      <input
+        ref={inputRef}
+        type="text"
+        className={cn(
+          "sr-only opacity-0 h-0",
+          isMobile ? "absolute pointer-events-auto" : "hidden pointer-events-none"
+        )}
+        aria-label="Typing input"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck="false"
+        onChange={handleInputChange}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+      />
+      
       <div 
         ref={containerRef}
         className={cn(
-          "w-full max-w-3xl p-8 rounded-lg border border-border",
+          "w-full max-w-full p-4 sm:p-6 md:p-8 rounded-lg border border-border",
           "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
           "transition-all duration-200 ease-in-out",
           "bg-background shadow-sm",
           testComplete ? "border-yellow-500" : "",
           restartFeedback ? "bg-secondary/30 scale-[0.98]" : "",
-          isClient && isFocused ? "ring-2 ring-ring ring-offset-2" : ""
+          isClient && isFocused ? "ring-2 ring-ring ring-offset-2" : "",
+          isMobile ? "h-[calc(60vh-6rem)]" : "min-h-[16rem]"
         )}
-        tabIndex={0}
-        onFocus={() => setIsFocused(true)}
+        tabIndex={isMobile ? -1 : 0}
+        onFocus={() => {
+          setIsFocused(true);
+          if (isMobile && inputRef.current) {
+            inputRef.current.focus();
+          }
+        }}
         onBlur={() => setIsFocused(false)}
       >
-        <div className="text-xl leading-relaxed tracking-wide">{renderText()}</div>
+        <div className="text-base sm:text-lg md:text-xl leading-relaxed tracking-wide">{renderText()}</div>
         
-        <div className="mt-8 flex flex-wrap items-center justify-between text-sm text-muted-foreground gap-y-2">
-          <div className="flex flex-wrap items-center gap-4">
+        <div className="mt-4 sm:mt-6 md:mt-8 flex flex-wrap items-center justify-between text-xs sm:text-sm text-muted-foreground gap-y-2">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
             <span>
               {typedText.length}/{text.length} characters
             </span>
@@ -415,8 +501,8 @@ const TypingTest: React.FC = () => {
                 Try Again
               </Button>
             ) : (
-              <div className="text-sm italic">
-                Press <kbd className="px-2 py-1 bg-muted rounded text-xs">Tab</kbd> + <kbd className="px-2 py-1 bg-muted rounded text-xs">Enter</kbd> to restart
+              <div className="text-xs sm:text-sm italic hidden sm:block">
+                Press <kbd className="px-1 sm:px-2 py-0.5 sm:py-1 bg-muted rounded text-xs">Tab</kbd> + <kbd className="px-1 sm:px-2 py-0.5 sm:py-1 bg-muted rounded text-xs">Enter</kbd> to restart
               </div>
             )}
           </div>
