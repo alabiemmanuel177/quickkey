@@ -1,11 +1,25 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 import TestOptionsHeader, { TestOptions } from "./TestOptionsHeader";
 import useSoundSettings from "@/hooks/useSoundSettings";
 import { initAudioContext } from "@/lib/sound-utils";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { CheckCircle, AlertCircle, BarChart2, RefreshCcw, LogIn } from "lucide-react";
+import Link from "next/link";
 
 // Sample texts for different test modes
 const wordTexts = [
@@ -51,7 +65,118 @@ const textWithNumbers = [
   "There are 24 hours in a day, 60 minutes in an hour, and 60 seconds in a minute."
 ];
 
+// Sample texts - modify word texts with different lengths for different time settings
+const shortWordTexts = [
+  "The quick brown fox jumps over the lazy dog.",
+  "How vexingly quick daft zebras jump!",
+  "Amazingly few discotheques provide jukeboxes.",
+  "Sphinx of black quartz, judge my vow.",
+  "Crazy Fredrick bought many very exquisite opal jewels."
+];
+
+const mediumWordTexts = [
+  "The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.",
+  "How vexingly quick daft zebras jump! Sphinx of black quartz, judge my vow.",
+  "Amazingly few discotheques provide jukeboxes. The five boxing wizards jump quickly.",
+  "We promptly judged antique ivory buckles for the next prize. Crazy Fredrick bought many very exquisite opal jewels.",
+  "The job requires extra pluck and zeal from every young wage earner. Waltz, bad nymph, for quick jigs vex."
+];
+
+const longWordTexts = [
+  "The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump! Sphinx of black quartz, judge my vow.",
+  "Amazingly few discotheques provide jukeboxes. The five boxing wizards jump quickly. We promptly judged antique ivory buckles for the next prize.",
+  "Crazy Fredrick bought many very exquisite opal jewels. The job requires extra pluck and zeal from every young wage earner. Waltz, bad nymph, for quick jigs vex.",
+  "The five boxing wizards jump quickly over the lazy dog. How vexingly quick daft zebras jump! Sphinx of black quartz, judge my vow and pack my box with five dozen liquor jugs.",
+  "A mad boxer shot a quick, gloved jab to the jaw of his dizzy opponent. Five or six big jet planes zoomed quickly by the new tower. My faxed joke won a pager in the cable TV quiz show."
+];
+
+// Short quotes
+const shortQuotesTexts = [
+  "Life is what happens when you're busy making other plans. - John Lennon",
+  "The only way to do great work is to love what you do. - Steve Jobs",
+  "In the end, it's the life in your years that count. - Abraham Lincoln",
+  "The future belongs to those who believe in their dreams. - Eleanor Roosevelt",
+  "Success is not final, failure is not fatal. - Winston Churchill"
+];
+
+// Medium quotes
+const mediumQuotesTexts = quotesTexts;
+
+// Long quotes
+const longQuotesTexts = [
+  "Life is what happens when you're busy making other plans. Yesterday is history, tomorrow is a mystery, but today is a gift. That is why it is called the present. - John Lennon",
+  "The only way to do great work is to love what you do. If you haven't found it yet, keep looking. Don't settle. As with all matters of the heart, you'll know when you find it. - Steve Jobs",
+  "In the end, it's not the years in your life that count. It's the life in your years. Nearly all men can stand adversity, but if you want to test a man's character, give him power. - Abraham Lincoln",
+  "The future belongs to those who believe in the beauty of their dreams. No one can make you feel inferior without your consent. Do what you feel in your heart to be right. - Eleanor Roosevelt",
+  "Success is not final, failure is not fatal: It is the courage to continue that counts. You have enemies? Good. That means you've stood up for something, sometime in your life. - Winston Churchill"
+];
+
+// Short punctuation texts
+const shortPunctuationTexts = [
+  "Every morning, I wake up and check my email.",
+  "As always, she arrived exactly on time!",
+  "We need the following items: milk, eggs, bread.",
+  "The museum has three sections to explore.",
+  "Well, that's a surprise! How have you been?"
+];
+
+// Medium punctuation texts
+const mediumPunctuationTexts = textWithPunctuation;
+
+// Long punctuation texts
+const longPunctuationTexts = [
+  "Every morning, I wake up and check my email; sometimes, there's nothing important, but other times, I find messages that need immediate attention!",
+  "As always, she arrived exactly on time – not a minute early, not a minute late! Her punctuality was something everyone admired; it was almost legendary.",
+  "We need the following items: milk, eggs, bread, and butter; don't forget the coffee, tea, sugar, and flour; also, remember to pick up some fresh fruit and vegetables.",
+  "The museum has three sections: modern art, classical paintings, and sculptures; each section has its own unique atmosphere, lighting, and curatorial approach to the exhibits.",
+  "Well, that's a surprise! I didn't expect to see you here; how have you been? It's been ages since our last meeting; you look great, by the way!"
+];
+
+// Short number texts
+const shortNumberTexts = [
+  "The combination to the safe is 32 46 18.",
+  "I need 5 apples, 3 oranges, 12 bananas.",
+  "The race times were 10.31, 10.28, 10.54.",
+  "My phone number is 555 123 4567.",
+  "There are 24 hours in a day."
+];
+
+// Medium number texts
+const mediumNumberTexts = textWithNumbers;
+
+// Long number texts
+const longNumberTexts = [
+  "The combination to the safe is 32 46 18 and the backup code is 9462. In case of emergency, call extension 5543 or the security office at 555-8901.",
+  "I need 5 apples, 3 oranges, 12 bananas, 8 strawberries, 2 pineapples, 4 kiwis, and 6 peaches for the recipe that serves 24 people.",
+  "The race times were 10.31, 10.28, 10.54, 10.97, 10.42, 10.36, 10.85, and 10.63 seconds for the 100 meter dash, with an average time of 10.55 seconds.",
+  "My phone number changed from 555 123 4567 to 555 987 6543 last month. The new area code will be 889 starting January 1, 2025.",
+  "There are 24 hours in a day, 60 minutes in an hour, 60 seconds in a minute, 365 days in a year, and approximately 8,760 hours in a year."
+];
+
+// Short punctuation and numbers texts
+const shortPunctuationNumbersTexts = [
+  "User94 added $5,000 to their account!",
+  "Meet me at 9:30 AM on June 7th, 2024.",
+  "The year is 2025, and we've grown 300%!",
+  "In 2023, 1,234 students scored 98.5%.",
+  "Room 101 - Please arrive at 08:15."
+];
+
+// Medium punctuation and numbers texts
+const mediumPunctuationNumbersTexts = textWithPunctuationAndNumbers;
+
+// Long punctuation and numbers texts
+const longPunctuationNumbersTexts = [
+  "User94 added $5,000 to their account on 12/25/2023, bringing their total to $12,345.67! The transaction #XB45921 was processed at 14:32:45 GMT with a fee of $2.50.",
+  "Meet me at 9:30 AM on June 7th, 2024; bring your ID #12345 and the $50.00 registration fee. We'll be in Conference Room B-12 on the 15th floor of Building 7.",
+  "The year is 2025, and we've achieved 300% growth in 42 countries across 7 continents! Our Q1 revenue was $12.5M, Q2 reached $15.8M, and Q3 hit a record $18.2M!",
+  "In 2023-2024, a total of 1,234 students scored 98.5% or higher on the exam #5678; that's an increase of 23.5% from last year's results, when only 999 students achieved this benchmark.",
+  "Room 101, Building 3 - Please arrive at 08:15 with forms A-12 & B-34 completed. The meeting will last 75 minutes, and we'll need to review the 25 action items from our 05/15/2024 session."
+];
+
 const TypingTest: React.FC = () => {
+  const { data: session } = useSession();
+  const { toast } = useToast();
   const [testOptions, setTestOptions] = useState<TestOptions>({
     punctuation: false,
     numbers: false,
@@ -69,24 +194,36 @@ const TypingTest: React.FC = () => {
   
   // Get text based on current options
   const getTextPool = useCallback(() => {
+    // Determine text length based on time limit
+    const getTextsByLength = (shortTexts: string[], mediumTexts: string[], longTexts: string[]) => {
+      if (testOptions.time <= 15) {
+        return shortTexts;
+      } else if (testOptions.time <= 60) {
+        return mediumTexts;
+      } else {
+        return longTexts;
+      }
+    };
+    
     if (testOptions.mode === "quote") {
-      return quotesTexts;
+      return getTextsByLength(shortQuotesTexts, mediumQuotesTexts, longQuotesTexts);
     }
     
     if (testOptions.punctuation && testOptions.numbers) {
-      return textWithPunctuationAndNumbers;
+      return getTextsByLength(shortPunctuationNumbersTexts, mediumPunctuationNumbersTexts, longPunctuationNumbersTexts);
     }
     
     if (testOptions.punctuation) {
-      return textWithPunctuation;
+      return getTextsByLength(shortPunctuationTexts, mediumPunctuationTexts, longPunctuationTexts);
     }
     
     if (testOptions.numbers) {
-      return textWithNumbers;
+      return getTextsByLength(shortNumberTexts, mediumNumberTexts, longNumberTexts);
     }
     
-    return wordTexts;
-  }, [testOptions.mode, testOptions.punctuation, testOptions.numbers]);
+    // Default words mode
+    return getTextsByLength(shortWordTexts, mediumWordTexts, longWordTexts);
+  }, [testOptions.mode, testOptions.punctuation, testOptions.numbers, testOptions.time]);
 
   // Get a random text from the pool
   const getRandomText = useCallback(() => {
@@ -109,6 +246,14 @@ const TypingTest: React.FC = () => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [restartFeedback, setRestartFeedback] = useState<boolean>(false);
+  const [tabPressed, setTabPressed] = useState<boolean>(false);
+  const [showResults, setShowResults] = useState<boolean>(false);
+  const [typingData, setTypingData] = useState<any[]>([]);
+  const [incorrectChars, setIncorrectChars] = useState<number>(0);
+  const [correctChars, setCorrectChars] = useState<number>(0);
+  const [peakWpm, setPeakWpm] = useState<number>(0);
+  const [consistencyScore, setConsistencyScore] = useState<number>(0);
+  const [errorsPerMinute, setErrorsPerMinute] = useState<number>(0);
 
   // Check if device is mobile
   useEffect(() => {
@@ -197,7 +342,43 @@ const TypingTest: React.FC = () => {
     };
   }, [startTime, testComplete, testOptions.time, timeRemaining]);
 
-  // Calculate WPM and accuracy
+  // Add this new function to save test results
+  const saveTestResult = useCallback(async () => {
+    if (!session || !session.user || !wpm || !accuracy) return;
+    
+    try {
+      const correctChars = typedText.split('').filter((char, i) => text[i] === char).length;
+      const errorCount = typedText.length - correctChars;
+      
+      const response = await fetch('/api/typing-results', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          wpm,
+          accuracy,
+          charsTyped: typedText.length,
+          errors: errorCount,
+          testDuration: testOptions.time,
+          testType: testOptions.mode,
+        }),
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to save test result');
+      } else {
+        toast({
+          title: "Result saved",
+          description: "Your typing test result has been saved to your profile!",
+        });
+      }
+    } catch (error) {
+      console.error('Error saving test result:', error);
+    }
+  }, [session, wpm, accuracy, typedText, text, testOptions, toast]);
+
+  // Modify the useEffect that monitors test completion to also calculate new metrics
   useEffect(() => {
     if (typedText.length > 0 && !startTime) {
       setStartTime(Date.now());
@@ -206,32 +387,76 @@ const TypingTest: React.FC = () => {
 
     if (typedText.length > 0 && startTime) {
       // Calculate accuracy
-      let correctChars = 0;
+      let correctCount = 0;
       for (let i = 0; i < typedText.length; i++) {
         if (i < text.length && typedText[i] === text[i]) {
-          correctChars++;
+          correctCount++;
         }
       }
-      const newAccuracy = Math.round((correctChars / typedText.length) * 100);
+      setCorrectChars(correctCount);
+      setIncorrectChars(typedText.length - correctCount);
+      const newAccuracy = Math.round((correctCount / typedText.length) * 100);
       setAccuracy(newAccuracy);
 
       // Calculate WPM - standard is 5 characters per word
       const elapsedMinutes = (Date.now() - startTime) / 60000;
       if (elapsedMinutes > 0) {
-        const wordsTyped = correctChars / 5;
+        const wordsTyped = correctCount / 5;
         const newWpm = Math.round(wordsTyped / elapsedMinutes);
         setWpm(newWpm);
+        
+        // Update peak WPM if current WPM is higher
+        if (newWpm > peakWpm) {
+          setPeakWpm(newWpm);
+        }
+        
+        // Calculate errors per minute
+        const errPerMin = Math.round((typedText.length - correctCount) / elapsedMinutes);
+        setErrorsPerMinute(errPerMin);
+        
+        // Record data for the chart every second or so
+        if (Math.floor(elapsedMinutes * 60) > typingData.length) {
+          setTypingData(prev => [
+            ...prev, 
+            { 
+              time: Math.floor(elapsedMinutes * 60), 
+              wpm: newWpm,
+              accuracy: newAccuracy
+            }
+          ]);
+        }
       }
     }
 
-    // Test completion
-    if (typedText.length === text.length && !testComplete) {
+    // Test completion and save results
+    if ((typedText.length === text.length || timeRemaining === 0) && !testComplete) {
       setTestComplete(true);
+      setShowResults(true);
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
+      
+      // Calculate consistency score when test is complete
+      if (typingData.length > 1) {
+        // Calculate standard deviation of WPM
+        const wpmValues = typingData.map(data => data.wpm);
+        const avgWpm = wpmValues.reduce((sum, val) => sum + val, 0) / wpmValues.length;
+        const squaredDiffs = wpmValues.map(val => Math.pow(val - avgWpm, 2));
+        const avgSquaredDiff = squaredDiffs.reduce((sum, val) => sum + val, 0) / squaredDiffs.length;
+        const stdDev = Math.sqrt(avgSquaredDiff);
+        
+        // Convert standard deviation to a 0-100 consistency score (lower std dev = higher consistency)
+        // Using a simple formula: 100 - (stdDev / avgWpm * 100), capped between 0-100
+        const rawScore = 100 - (stdDev / avgWpm * 100);
+        setConsistencyScore(Math.min(100, Math.max(0, Math.round(rawScore))));
+      }
+      
+      // Save test results if user is logged in
+      if (session?.user) {
+        saveTestResult();
+      }
     }
-  }, [typedText, text, startTime, testComplete, testOptions.time]);
+  }, [typedText, text, startTime, testComplete, testOptions.time, timeRemaining, session, saveTestResult, typingData, peakWpm]);
 
   // Restart the test and show visual feedback
   const restartTest = useCallback(() => {
@@ -242,6 +467,10 @@ const TypingTest: React.FC = () => {
     setAccuracy(null);
     setTimeRemaining(null);
     setTestComplete(false);
+    setShowResults(false);
+    setTypingData([]);
+    setCorrectChars(0);
+    setIncorrectChars(0);
     
     // Show restart feedback animation
     setRestartFeedback(true);
@@ -275,24 +504,40 @@ const TypingTest: React.FC = () => {
 
   // Handle keydown events
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (testComplete) return;
-    
-    // Prevent default browser behavior for most keystrokes
-    if (e.key !== "Tab") {
-      e.preventDefault();
+    // Allow keyboard shortcuts even when test is complete
+    if (testComplete && e.key !== "Tab" && !(e.key === "Enter" && tabPressed)) return;
+
+    // Handle Tab key for the Tab+Enter shortcut
+    if (e.key === "Tab") {
+      e.preventDefault(); // Prevent tab from changing focus
+      setTabPressed(true);
+      return;
     }
 
-    // Handle restart shortcut (Tab + Enter)
-    if (e.key === "Enter" && e.getModifierState("Tab")) {
-      e.preventDefault(); // Prevent default for this combination
+    // Handle Enter key when Tab is already pressed
+    if (e.key === "Enter" && tabPressed) {
+      e.preventDefault();
+      setTabPressed(false);
+      
+      // Reset test if it's completed
+      if (testComplete) {
+        setShowResults(false);
+      }
+      
       restartTest();
       return;
     }
-
-    if (e.key === "Tab") {
-      // We don't prevent default here to allow Tab to be a part of our shortcut
-      return;
+    
+    // Only process other keys if the test is not complete
+    if (testComplete) return;
+    
+    // Reset Tab state for other keys
+    if (tabPressed && e.key !== "Tab" && e.key !== "Enter") {
+      setTabPressed(false);
     }
+
+    // Prevent default browser behavior for most keystrokes
+    e.preventDefault();
 
     // Handle backspace
     if (e.key === "Backspace") {
@@ -328,7 +573,17 @@ const TypingTest: React.FC = () => {
         return prev;
       });
     }
-  }, [text, restartTest, testComplete, soundSettings, playKeyPressSound, playErrorSound]);
+  }, [text, restartTest, testComplete, soundSettings, playKeyPressSound, playErrorSound, tabPressed]);
+
+  // Add a keyup handler to reset the tab state
+  const handleKeyUp = useCallback((e: KeyboardEvent) => {
+    if (e.key === "Tab") {
+      // Add a small delay before resetting to allow for Tab+Enter combination
+      setTimeout(() => {
+        setTabPressed(false);
+      }, 1500);
+    }
+  }, []);
 
   // Handle input change for mobile
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -382,12 +637,21 @@ const TypingTest: React.FC = () => {
         }
       };
 
+      const handleKeyUpWrapper = (e: KeyboardEvent) => {
+        if (isFocused) {
+          handleKeyUp(e);
+        }
+      };
+
       window.addEventListener("keydown", handleKeyDownWrapper);
+      window.addEventListener("keyup", handleKeyUpWrapper);
+      
       return () => {
         window.removeEventListener("keydown", handleKeyDownWrapper);
+        window.removeEventListener("keyup", handleKeyUpWrapper);
       };
     }
-  }, [handleKeyDown, isFocused, isClient, isMobile]);
+  }, [handleKeyDown, handleKeyUp, isFocused, isClient, isMobile]);
 
   // Generate character spans with appropriate styling based on typing status
   const renderText = () => {
@@ -428,86 +692,286 @@ const TypingTest: React.FC = () => {
     });
   };
 
+  // Render the detailed results screen
+  const renderResultsScreen = () => {
+    if (!wpm || !accuracy) return null;
+
+    // Calculate keystroke efficiency (ratio of correct keystrokes to total)
+    const keystrokeEfficiency = Math.round((correctChars / (correctChars + incorrectChars)) * 100);
+    
+    return (
+      <Card className="w-full max-w-5xl mx-auto mt-6">
+        <CardHeader>
+          <CardTitle className="text-2xl">Your Typing Results</CardTitle>
+          <CardDescription>
+            Here's how you performed in your {testOptions.time} second {testOptions.mode} test
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Primary metrics */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-muted rounded-md p-4 text-center">
+              <div className="text-xs sm:text-sm text-muted-foreground mb-1">Speed</div>
+              <div className="text-xl sm:text-2xl font-bold">{wpm} WPM</div>
+            </div>
+            <div className="bg-muted rounded-md p-4 text-center">
+              <div className="text-xs sm:text-sm text-muted-foreground mb-1">Accuracy</div>
+              <div className="text-xl sm:text-2xl font-bold">{accuracy}%</div>
+            </div>
+            <div className="bg-muted rounded-md p-4 text-center">
+              <div className="text-xs sm:text-sm text-muted-foreground mb-1">Consistency</div>
+              <div className="text-xl sm:text-2xl font-bold">{consistencyScore}%</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {consistencyScore >= 90 ? "Very stable" : 
+                 consistencyScore >= 75 ? "Steady" : 
+                 consistencyScore >= 60 ? "Somewhat varied" : "Fluctuating"}
+              </div>
+            </div>
+            <div className="bg-muted rounded-md p-4 text-center">
+              <div className="text-xs sm:text-sm text-muted-foreground mb-1">Peak WPM</div>
+              <div className="text-xl sm:text-2xl font-bold text-blue-500">{peakWpm}</div>
+            </div>
+          </div>
+          
+          {/* Secondary metrics */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-muted/50 rounded-md p-4 text-center">
+              <div className="text-xs sm:text-sm text-muted-foreground mb-1">Keystroke Efficiency</div>
+              <div className="text-lg sm:text-xl font-medium">{keystrokeEfficiency}%</div>
+            </div>
+            <div className="bg-muted/50 rounded-md p-4 text-center">
+              <div className="text-xs sm:text-sm text-muted-foreground mb-1">Errors/Min</div>
+              <div className="text-lg sm:text-xl font-medium text-red-500">{errorsPerMinute}</div>
+            </div>
+            <div className="bg-muted/50 rounded-md p-4 text-center">
+              <div className="text-xs sm:text-sm text-muted-foreground mb-1">Correct Chars</div>
+              <div className="text-lg sm:text-xl font-medium text-green-500">{correctChars}</div>
+            </div>
+            <div className="bg-muted/50 rounded-md p-4 text-center">
+              <div className="text-xs sm:text-sm text-muted-foreground mb-1">Errors</div>
+              <div className="text-lg sm:text-xl font-medium text-red-500">{incorrectChars}</div>
+            </div>
+          </div>
+          
+          <Separator />
+          
+          {/* Performance graph */}
+          <div className="pt-2">
+            <h3 className="text-lg font-semibold mb-3 flex items-center">
+              <BarChart2 className="mr-2 h-5 w-5" />
+              Performance Graph
+            </h3>
+            <div className="h-[250px] w-full">
+              {typingData.length > 1 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={typingData}
+                    margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="time" 
+                      label={{ value: 'Seconds', position: 'insideBottom', offset: 0 }} 
+                    />
+                    <YAxis 
+                      label={{ value: 'WPM', angle: -90, position: 'insideLeft' }}
+                    />
+                    <Tooltip 
+                      formatter={(value, name) => [
+                        `${value} ${name === 'wpm' ? 'WPM' : '%'}`, 
+                        name === 'wpm' ? 'Speed' : 'Accuracy'
+                      ]}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="wpm" 
+                      name="wpm"
+                      stroke="#3b82f6" 
+                      strokeWidth={2} 
+                      dot={{ r: 1 }}
+                      activeDot={{ r: 5 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="accuracy" 
+                      name="accuracy"
+                      stroke="#10b981" 
+                      strokeWidth={2} 
+                      dot={{ r: 0 }}
+                      activeDot={{ r: 4 }}
+                      strokeDasharray="3 3"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-muted-foreground">
+                  Not enough data to display chart
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Performance insights */}
+          <div className="bg-muted/20 p-4 rounded-md">
+            <h3 className="text-md font-semibold mb-2">Performance Insights</h3>
+            <ul className="text-sm space-y-2">
+              {peakWpm > wpm * 1.2 && (
+                <li className="flex items-start">
+                  <span className="mr-2 text-blue-500">•</span>
+                  Your peak speed ({peakWpm} WPM) is significantly higher than your average. With more practice, you could maintain this speed longer.
+                </li>
+              )}
+              {consistencyScore < 70 && (
+                <li className="flex items-start">
+                  <span className="mr-2 text-amber-500">•</span>
+                  Your typing speed fluctuated during the test. Focus on maintaining a steady rhythm to improve consistency.
+                </li>
+              )}
+              {errorsPerMinute > 5 && (
+                <li className="flex items-start">
+                  <span className="mr-2 text-red-500">•</span>
+                  You're making {errorsPerMinute} errors per minute. Slowing down slightly might help improve accuracy.
+                </li>
+              )}
+              {accuracy > 95 && wpm < 40 && (
+                <li className="flex items-start">
+                  <span className="mr-2 text-green-500">•</span>
+                  Your accuracy is excellent! You might try increasing your speed a bit without sacrificing precision.
+                </li>
+              )}
+              {wpm > 60 && consistencyScore >= 80 && (
+                <li className="flex items-start">
+                  <span className="mr-2 text-green-500">•</span>
+                  Great job! Your typing is both fast and consistent.
+                </li>
+              )}
+            </ul>
+          </div>
+        </CardContent>
+        
+        <CardFooter className="flex flex-col sm:flex-row gap-3 justify-between">
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="w-full sm:w-auto"
+            onClick={restartTest}
+          >
+            <RefreshCcw className="mr-2 h-4 w-4" />
+            Take Another Test
+          </Button>
+          
+          {!session?.user ? (
+            <Button asChild size="lg" className="w-full sm:w-auto">
+              <Link href="/auth">
+                <LogIn className="mr-2 h-4 w-4" />
+                Sign in to Save Results
+              </Link>
+            </Button>
+          ) : (
+            <div className="flex items-center text-sm text-muted-foreground">
+              <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+              Your results have been saved to your profile
+            </div>
+          )}
+        </CardFooter>
+      </Card>
+    );
+  };
+
   return (
     <>
       <TestOptionsHeader options={testOptions} onChange={handleOptionsChange} />
       
-      {/* Hidden input for mobile keyboards */}
-      <input
-        ref={inputRef}
-        type="text"
-        className={cn(
-          "sr-only opacity-0 h-0",
-          isMobile ? "absolute pointer-events-auto" : "hidden pointer-events-none"
-        )}
-        aria-label="Typing input"
-        autoComplete="off"
-        autoCorrect="off"
-        autoCapitalize="off"
-        spellCheck="false"
-        onChange={handleInputChange}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-      />
-      
-      <div 
-        ref={containerRef}
-        className={cn(
-          "w-full max-w-full p-4 sm:p-6 md:p-8 rounded-lg border border-border",
-          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-          "transition-all duration-200 ease-in-out",
-          "bg-background shadow-sm",
-          testComplete ? "border-yellow-500" : "",
-          restartFeedback ? "bg-secondary/30 scale-[0.98]" : "",
-          isClient && isFocused ? "ring-2 ring-ring ring-offset-2" : "",
-          isMobile ? "h-[calc(60vh-6rem)]" : "min-h-[16rem]"
-        )}
-        tabIndex={isMobile ? -1 : 0}
-        onFocus={() => {
-          setIsFocused(true);
-          if (isMobile && inputRef.current) {
-            inputRef.current.focus();
-          }
-        }}
-        onBlur={() => setIsFocused(false)}
-      >
-        <div className="text-base sm:text-lg md:text-xl leading-relaxed tracking-wide">{renderText()}</div>
-        
-        <div className="mt-4 sm:mt-6 md:mt-8 flex flex-wrap items-center justify-between text-xs sm:text-sm text-muted-foreground gap-y-2">
-          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-            <span>
-              {typedText.length}/{text.length} characters
-            </span>
-            {wpm !== null && (
-              <span>
-                {wpm} WPM
-              </span>
+      {/* Show either the typing test or the results screen */}
+      {!showResults ? (
+        <>
+          {/* Hidden input for mobile keyboards */}
+          <input
+            ref={inputRef}
+            type="text"
+            className={cn(
+              "sr-only opacity-0 h-0",
+              isMobile ? "absolute pointer-events-auto" : "hidden pointer-events-none"
             )}
-            {accuracy !== null && (
-              <span>
-                {accuracy}% accuracy
-              </span>
-            )}
-            {timeRemaining !== null && (
-              <span className={timeRemaining < 10 ? "text-red-500 font-bold" : ""}>
-                {timeRemaining}s remaining
-              </span>
-            )}
-          </div>
+            aria-label="Typing input"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck="false"
+            onChange={handleInputChange}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+          />
           
-          <div className="flex items-center gap-2">
-            {testComplete ? (
-              <Button size="sm" onClick={() => restartTest()}>
-                Try Again
-              </Button>
-            ) : (
-              <div className="text-xs sm:text-sm italic hidden sm:block">
-                Press <kbd className="px-1 sm:px-2 py-0.5 sm:py-1 bg-muted rounded text-xs">Tab</kbd> + <kbd className="px-1 sm:px-2 py-0.5 sm:py-1 bg-muted rounded text-xs">Enter</kbd> to restart
-              </div>
+          <div 
+            ref={containerRef}
+            className={cn(
+              "w-full max-w-full p-4 sm:p-6 md:p-8 rounded-lg border border-border",
+              "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+              "transition-all duration-200 ease-in-out",
+              "bg-background shadow-sm",
+              testComplete ? "border-yellow-500" : "",
+              restartFeedback ? "bg-secondary/30 scale-[0.98]" : "",
+              isClient && isFocused ? "ring-2 ring-ring ring-offset-2" : "",
+              isMobile ? "h-[calc(60vh-6rem)]" : "min-h-[16rem]"
             )}
+            tabIndex={isMobile ? -1 : 0}
+            onFocus={() => {
+              setIsFocused(true);
+              if (isMobile && inputRef.current) {
+                inputRef.current.focus();
+              }
+            }}
+            onBlur={() => setIsFocused(false)}
+          >
+            <div className="text-base sm:text-lg md:text-xl leading-relaxed tracking-wide">{renderText()}</div>
+            
+            <div className="mt-4 sm:mt-6 md:mt-8 flex flex-wrap items-center justify-between text-xs sm:text-sm text-muted-foreground gap-y-2">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                <span>
+                  {typedText.length}/{text.length} characters
+                </span>
+                {wpm !== null && (
+                  <span>
+                    {wpm} WPM
+                  </span>
+                )}
+                {accuracy !== null && (
+                  <span>
+                    {accuracy}% accuracy
+                  </span>
+                )}
+                {timeRemaining !== null && (
+                  <span className={timeRemaining < 10 ? "text-red-500 font-bold" : ""}>
+                    {timeRemaining}s remaining
+                  </span>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-2">
+                {testComplete ? (
+                  <Button size="sm" onClick={() => setShowResults(true)}>
+                    See Results
+                  </Button>
+                ) : (
+                  <div className="text-xs sm:text-sm italic hidden sm:block">
+                    Press <kbd className="px-1 sm:px-2 py-0.5 sm:py-1 bg-muted rounded text-xs">Tab</kbd> + <kbd className="px-1 sm:px-2 py-0.5 sm:py-1 bg-muted rounded text-xs">Enter</kbd> to restart
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+
+          {/* Add a small message for logged-in users */}
+          {session?.user && (
+            <div className="mt-2 text-xs text-center text-muted-foreground">
+              Your results will be saved to your profile and may appear on the leaderboard.
+            </div>
+          )}
+        </>
+      ) : (
+        renderResultsScreen()
+      )}
     </>
   );
 };

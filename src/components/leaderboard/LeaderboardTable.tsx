@@ -1,8 +1,8 @@
 "use client";
 
-import { format } from "date-fns";
-import { Medal } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useState } from "react";
+import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -11,91 +11,127 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { LeaderboardEntry } from "@/hooks/useLeaderboard";
+import { formatDistanceToNow } from "date-fns";
+import { Trophy } from "lucide-react";
+
+interface LeaderboardUser {
+  id: string;
+  name: string | null;
+  image: string | null;
+}
+
+interface LeaderboardEntry {
+  id: string;
+  wpm: number;
+  accuracy: number;
+  charsTyped: number;
+  testDuration: number;
+  testType: string;
+  createdAt: string | Date;
+  user: LeaderboardUser;
+}
 
 interface LeaderboardTableProps {
-  entries: LeaderboardEntry[];
-  isLoading: boolean;
+  data: LeaderboardEntry[];
 }
 
-export function LeaderboardTable({
-  entries,
-  isLoading,
-}: LeaderboardTableProps) {
-  // Get appropriate icon based on rank
-  const getRankIcon = (rank: number) => {
-    if (rank === 1) {
-      return <Medal className="h-5 w-5 text-yellow-500 fill-yellow-500" />;
-    } else if (rank === 2) {
-      return <Medal className="h-5 w-5 text-gray-400 fill-gray-400" />;
-    } else if (rank === 3) {
-      return <Medal className="h-5 w-5 text-amber-700 fill-amber-700" />;
-    }
-    return null;
-  };
+const LeaderboardTable = ({ data }: LeaderboardTableProps) => {
+  // Default sort by WPM descending
+  const [sortBy, setSortBy] = useState<"wpm" | "accuracy">("wpm");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
-  // Format test type and duration
-  const getTestTypeString = (entry: LeaderboardEntry) => {
-    if (entry.testType === "time") {
-      return `${entry.duration} seconds`;
+  // Sort the data based on current sort settings
+  const sortedData = [...data].sort((a, b) => {
+    const multiplier = sortDirection === "desc" ? -1 : 1;
+    return (a[sortBy] - b[sortBy]) * multiplier;
+  });
+
+  // Toggle sorting
+  const toggleSort = (column: "wpm" | "accuracy") => {
+    if (sortBy === column) {
+      setSortDirection(sortDirection === "desc" ? "asc" : "desc");
     } else {
-      return `${entry.duration} words`;
+      setSortBy(column);
+      setSortDirection("desc");
     }
   };
 
-  if (isLoading) {
-    return <LeaderboardTableSkeleton />;
-  }
-
-  if (entries.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">
-          No entries found. Be the first to set a record!
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="rounded-md border">
+    <div className="w-full overflow-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[60px]">Rank</TableHead>
+            <TableHead className="w-16">Rank</TableHead>
             <TableHead>User</TableHead>
-            <TableHead>WPM</TableHead>
-            <TableHead>Accuracy</TableHead>
-            <TableHead>Test Type</TableHead>
-            <TableHead className="text-right">Date</TableHead>
+            <TableHead 
+              className="text-right cursor-pointer hover:text-primary"
+              onClick={() => toggleSort("wpm")}
+            >
+              WPM {sortBy === "wpm" && (sortDirection === "desc" ? "↓" : "↑")}
+            </TableHead>
+            <TableHead 
+              className="text-right cursor-pointer hover:text-primary"
+              onClick={() => toggleSort("accuracy")}
+            >
+              Accuracy {sortBy === "accuracy" && (sortDirection === "desc" ? "↓" : "↑")}
+            </TableHead>
+            <TableHead className="text-right hidden md:table-cell">Test</TableHead>
+            <TableHead className="text-right hidden md:table-cell">When</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {entries.map((entry, index) => (
-            <TableRow key={entry.id}>
-              <TableCell className="font-medium">
-                <div className="flex items-center gap-1">
-                  {getRankIcon(index + 1)}
-                  <span>{index + 1}</span>
-                </div>
+          {sortedData.map((entry, index) => (
+            <TableRow key={entry.id} className={index < 3 ? "font-medium" : ""}>
+              <TableCell className="font-mono">
+                {index === 0 ? (
+                  <div className="flex items-center justify-center">
+                    <Trophy className="h-5 w-5 text-yellow-500" />
+                  </div>
+                ) : index === 1 ? (
+                  <div className="flex items-center justify-center">
+                    <Trophy className="h-5 w-5 text-gray-400" />
+                  </div>
+                ) : index === 2 ? (
+                  <div className="flex items-center justify-center">
+                    <Trophy className="h-5 w-5 text-amber-700" />
+                  </div>
+                ) : (
+                  <span className="text-center block">{index + 1}</span>
+                )}
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={entry.userAvatar} alt={entry.userName} />
-                    <AvatarFallback>
-                      {entry.userName.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="font-medium">{entry.userName}</div>
+                  {entry.user.image ? (
+                    <Image
+                      src={entry.user.image}
+                      alt={entry.user.name || "User"}
+                      width={32}
+                      height={32}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                      <span className="text-sm">
+                        {entry.user.name?.charAt(0) || "U"}
+                      </span>
+                    </div>
+                  )}
+                  <span>{entry.user.name || "Anonymous"}</span>
                 </div>
               </TableCell>
-              <TableCell className="font-semibold">{entry.wpm}</TableCell>
-              <TableCell>{entry.accuracy}%</TableCell>
-              <TableCell>{getTestTypeString(entry)}</TableCell>
-              <TableCell className="text-right">
-                {format(new Date(entry.createdAt), "PP")}
+              <TableCell className="text-right font-mono">
+                {entry.wpm}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {entry.accuracy.toFixed(1)}%
+              </TableCell>
+              <TableCell className="text-right hidden md:table-cell">
+                <Badge variant="outline">
+                  {entry.testType === "words" ? "Words" : "Quote"} ({entry.testDuration}s)
+                </Badge>
+              </TableCell>
+              <TableCell className="text-right text-muted-foreground text-sm hidden md:table-cell">
+                {formatDistanceToNow(new Date(entry.createdAt), { addSuffix: true })}
               </TableCell>
             </TableRow>
           ))}
@@ -103,50 +139,6 @@ export function LeaderboardTable({
       </Table>
     </div>
   );
-}
+};
 
-function LeaderboardTableSkeleton() {
-  return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[60px]">Rank</TableHead>
-            <TableHead>User</TableHead>
-            <TableHead>WPM</TableHead>
-            <TableHead>Accuracy</TableHead>
-            <TableHead>Test Type</TableHead>
-            <TableHead className="text-right">Date</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {Array.from({ length: 10 }).map((_, i) => (
-            <TableRow key={i}>
-              <TableCell>
-                <Skeleton className="h-5 w-8" />
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-8 w-8 rounded-full" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-12" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-16" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-24" />
-              </TableCell>
-              <TableCell className="text-right">
-                <Skeleton className="h-4 w-20 ml-auto" />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
-}
+export default LeaderboardTable;

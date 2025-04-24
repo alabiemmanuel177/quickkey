@@ -1,10 +1,42 @@
 import TypingTest from "@/components/TypingTest";
 import { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "QuickKey - Practice Typing",
-  description: "Improve your typing speed and accuracy with QuickKey's interactive typing tests",
-};
+// Generate dynamic metadata with specific OG parameters for the homepage
+export async function generateMetadata(): Promise<Metadata> {
+  const title = "QuickKey - Practice Typing";
+  const description = "Improve your typing speed and accuracy with QuickKey's interactive typing tests";
+  
+  // Base URL from environment or default for local development
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+                 process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
+                 'http://localhost:3000';
+  
+  // Generate the OG image URL with encoded parameters
+  const ogImageUrl = `${baseUrl}/api/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}&theme=default&mode=light`;
+  
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: "QuickKey - Typing Practice",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImageUrl],
+    },
+  };
+}
 
 export default function Home() {
   return (

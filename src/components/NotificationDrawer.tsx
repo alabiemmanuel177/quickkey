@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -11,44 +11,122 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { BellIcon, X } from "lucide-react";
+import { BellIcon, X, CheckCircle } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useSession } from "next-auth/react";
+import axios from "axios";
+import { formatDistanceToNow } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 
-// Sample notifications data
-const notifications = [
-  {
-    id: 1,
-    title: "New personal best!",
-    message: "You achieved 85 WPM on your last typing test. Great job!",
-    date: "2 hours ago",
-    read: false,
-  },
-  {
-    id: 2,
-    title: "Daily Challenge Available",
-    message: "A new daily typing challenge is now available.",
-    date: "Yesterday",
-    read: true,
-  },
-  {
-    id: 3,
-    title: "Welcome to QuickKey!",
-    message: "Thanks for joining. Practice daily to improve your typing speed.",
-    date: "3 days ago",
-    read: true,
-  },
-];
+// Define notification type
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  read: boolean;
+  createdAt: string;
+}
 
 const NotificationDrawer = () => {
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const { data: session, status } = useSession();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchNotifications = async () => {
+    if (status !== "authenticated") return;
+    
+    try {
+      setIsLoading(true);
+      const response = await axios.get('/api/notifications');
+      setNotifications(response.data.notifications);
+      setUnreadCount(response.data.unreadCount);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const markAsRead = async (id: string) => {
+    try {
+      await axios.patch(`/api/notifications/${id}`, { read: true });
+      
+      // Update local state
+      setNotifications(prev => 
+        prev.map(notification => 
+          notification.id === id 
+            ? { ...notification, read: true } 
+            : notification
+        )
+      );
+      
+      // Update unread count
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  const deleteNotification = async (id: string) => {
+    try {
+      await axios.delete(`/api/notifications/${id}`);
+      
+      // Update local state
+      const updatedNotifications = notifications.filter(
+        notification => notification.id !== id
+      );
+      setNotifications(updatedNotifications);
+      
+      // Update unread count if necessary
+      const removedNotification = notifications.find(n => n.id === id);
+      if (removedNotification && !removedNotification.read) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
+  };
+
+  // Fetch notifications when drawer opens or session changes
+  useEffect(() => {
+    if (isOpen && status === "authenticated") {
+      fetchNotifications();
+    }
+  }, [isOpen, status]);
+
+  const getNotificationTypeColor = (type: string) => {
+    switch (type) {
+      case 'success':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      case 'warning':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'info':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case 'achievement':
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    try {
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+    } catch (error) {
+      return 'Unknown time';
+    }
+  };
 
   return (
-    <Sheet>
+    <Sheet onOpenChange={setIsOpen}>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -58,6 +136,7 @@ const NotificationDrawer = () => {
                 size="icon"
                 className="relative"
                 aria-label="Notifications"
+                onClick={() => status === "authenticated" && fetchNotifications()}
               >
                 <BellIcon className="h-[1.2rem] w-[1.2rem]" />
                 {unreadCount > 0 && (
@@ -74,7 +153,7 @@ const NotificationDrawer = () => {
         </Tooltip>
       </TooltipProvider>
 
-      <SheetContent className="w-[320px] sm:w-[400px]">
+      <SheetContent className="w-80 sm:w-[400px] p-6 sm:p-8">
         <SheetHeader className="relative">
           <SheetTitle>Notifications</SheetTitle>
           <SheetDescription>
@@ -86,8 +165,16 @@ const NotificationDrawer = () => {
           </SheetClose>
         </SheetHeader>
 
-        <div className="mt-6 flex flex-col gap-4">
-          {notifications.length === 0 ? (
+        <div className="mt-6 flex flex-col space-y-4">
+          {isLoading ? (
+            <p className="text-center text-muted-foreground py-8">
+              Loading notifications...
+            </p>
+          ) : status !== "authenticated" ? (
+            <p className="text-center text-muted-foreground py-8">
+              Sign in to view your notifications.
+            </p>
+          ) : notifications.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
               No notifications yet.
             </p>
@@ -95,19 +182,50 @@ const NotificationDrawer = () => {
             notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`rounded-lg border p-4 transition-colors ${
+                className={`relative rounded-lg border px-6 py-4 transition-colors ${
                   !notification.read
                     ? "border-primary/50 bg-primary/5"
                     : "border-border"
                 }`}
               >
                 <div className="flex items-start justify-between">
-                  <h4 className="font-medium">{notification.title}</h4>
+                  <div className="flex flex-1 items-center">
+                    <h4 className="font-medium">{notification.title}</h4>
+                    <Badge 
+                      variant="secondary" 
+                      className={`ml-2 text-[10px] ${getNotificationTypeColor(notification.type)}`}
+                    >
+                      {notification.type}
+                    </Badge>
+                  </div>
                   <span className="text-xs text-muted-foreground">
-                    {notification.date}
+                    {formatDate(notification.createdAt)}
                   </span>
                 </div>
-                <p className="mt-1 text-sm">{notification.message}</p>
+                <p className="mt-1 text-sm mb-6">{notification.message}</p>
+
+                <div className="absolute bottom-3 right-4 flex space-x-2">
+                  {!notification.read && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-7 px-2 text-xs"
+                      onClick={() => markAsRead(notification.id)}
+                    >
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Mark read
+                    </Button>
+                  )}
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                    onClick={() => deleteNotification(notification.id)}
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Delete
+                  </Button>
+                </div>
               </div>
             ))
           )}

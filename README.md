@@ -20,6 +20,50 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## OpenGraph Image Generation
+
+QuickKey uses dynamic OpenGraph image generation for enhanced social media sharing. The OG images are generated on-the-fly using Next.js' Edge Runtime and the ImageResponse API.
+
+### Customizing OG Images
+
+The OG image generator accepts the following URL parameters:
+
+- `title`: The main title displayed on the image (default: "QuickKey")
+- `description`: The subtitle or description text (default: "Improve your typing speed and accuracy")
+- `mode`: Color scheme - "light" or "dark" (default: "light")
+- `theme`: Color theme - "default", "green", or "red" (default: "default")
+
+Examples:
+- Basic OG image: `/api/og`
+- Custom title: `/api/og?title=Practice%20Typing`
+- Dark mode with green theme: `/api/og?mode=dark&theme=green`
+
+### Implementation
+
+To customize OpenGraph images for a specific page, implement the `generateMetadata` function in your page component:
+
+```tsx
+export async function generateMetadata(): Promise<Metadata> {
+  const title = "Your Page Title";
+  const description = "Your page description";
+  
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://yoursite.com';
+  const ogImageUrl = `${baseUrl}/api/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}&theme=default`;
+  
+  return {
+    title,
+    description,
+    openGraph: {
+      images: [{ url: ogImageUrl, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: [ogImageUrl],
+    },
+  };
+}
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
