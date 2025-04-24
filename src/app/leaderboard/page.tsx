@@ -75,9 +75,9 @@ export default async function LeaderboardPage({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  // Get filter parameters from URL or use defaults - use nullish coalescing for safety
-  const timeFilterParam = searchParams.time;
-  const testTypeParam = searchParams.type;
+  // Get filter parameters from URL or use defaults
+  const timeFilterParam = searchParams?.time ?? "all";
+  const testTypeParam = searchParams?.type ?? "words";
   
   const timeFilter = typeof timeFilterParam === "string" ? timeFilterParam : "all";
   const testType = typeof testTypeParam === "string" ? testTypeParam : "words";
@@ -90,13 +90,15 @@ export default async function LeaderboardPage({
   const activeTab = testType === "quote" ? "quotes" : "words";
   
   return (
-    <div className="container py-8 flex flex-col items-center">
-      <h1 className="text-3xl font-bold tracking-tight mb-4">Leaderboard</h1>
-      <p className="text-muted-foreground mb-8">
-        See how you stack up against other typists. The leaderboard shows the top results for typing speed (WPM) and accuracy.
-      </p>
+    <div className="container max-w-4xl mx-auto py-8">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold tracking-tight mb-4">Leaderboard</h1>
+        <p className="text-muted-foreground mb-8">
+          See how you stack up against other typists. The leaderboard shows the top results for typing speed (WPM) and accuracy.
+        </p>
+      </div>
       
-      <div className="max-w-4xl w-full">
+      <div className="w-full">
         <TimeFilterSelect activeFilter={timeFilter} />
         
         <Card className="mt-6">

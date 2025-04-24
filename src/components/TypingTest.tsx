@@ -506,7 +506,7 @@ const TypingTest: React.FC = () => {
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     // Allow keyboard shortcuts even when test is complete
     if (testComplete && e.key !== "Tab" && !(e.key === "Enter" && tabPressed)) return;
-
+    
     // Handle Tab key for the Tab+Enter shortcut
     if (e.key === "Tab") {
       e.preventDefault(); // Prevent tab from changing focus
@@ -522,12 +522,12 @@ const TypingTest: React.FC = () => {
       // Reset test if it's completed
       if (testComplete) {
         setShowResults(false);
-      }
-      
+    }
+
       restartTest();
       return;
     }
-    
+
     // Only process other keys if the test is not complete
     if (testComplete) return;
     
@@ -885,82 +885,82 @@ const TypingTest: React.FC = () => {
       {/* Show either the typing test or the results screen */}
       {!showResults ? (
         <>
-          {/* Hidden input for mobile keyboards */}
-          <input
-            ref={inputRef}
-            type="text"
-            className={cn(
-              "sr-only opacity-0 h-0",
-              isMobile ? "absolute pointer-events-auto" : "hidden pointer-events-none"
+      {/* Hidden input for mobile keyboards */}
+      <input
+        ref={inputRef}
+        type="text"
+        className={cn(
+          "sr-only opacity-0 h-0",
+          isMobile ? "absolute pointer-events-auto" : "hidden pointer-events-none"
+        )}
+        aria-label="Typing input"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck="false"
+        onChange={handleInputChange}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+      />
+      
+      <div 
+        ref={containerRef}
+        className={cn(
+          "w-full max-w-full p-4 sm:p-6 md:p-8 rounded-lg border border-border",
+          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+          "transition-all duration-200 ease-in-out",
+          "bg-background shadow-sm",
+          testComplete ? "border-yellow-500" : "",
+          restartFeedback ? "bg-secondary/30 scale-[0.98]" : "",
+          isClient && isFocused ? "ring-2 ring-ring ring-offset-2" : "",
+          isMobile ? "h-[calc(60vh-6rem)]" : "min-h-[16rem]"
+        )}
+        tabIndex={isMobile ? -1 : 0}
+        onFocus={() => {
+          setIsFocused(true);
+          if (isMobile && inputRef.current) {
+            inputRef.current.focus();
+          }
+        }}
+        onBlur={() => setIsFocused(false)}
+      >
+        <div className="text-base sm:text-lg md:text-xl leading-relaxed tracking-wide">{renderText()}</div>
+        
+        <div className="mt-4 sm:mt-6 md:mt-8 flex flex-wrap items-center justify-between text-xs sm:text-sm text-muted-foreground gap-y-2">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+            <span>
+              {typedText.length}/{text.length} characters
+            </span>
+            {wpm !== null && (
+              <span>
+                {wpm} WPM
+              </span>
             )}
-            aria-label="Typing input"
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck="false"
-            onChange={handleInputChange}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-          />
+            {accuracy !== null && (
+              <span>
+                {accuracy}% accuracy
+              </span>
+            )}
+            {timeRemaining !== null && (
+              <span className={timeRemaining < 10 ? "text-red-500 font-bold" : ""}>
+                {timeRemaining}s remaining
+              </span>
+            )}
+          </div>
           
-          <div 
-            ref={containerRef}
-            className={cn(
-              "w-full max-w-full p-4 sm:p-6 md:p-8 rounded-lg border border-border",
-              "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-              "transition-all duration-200 ease-in-out",
-              "bg-background shadow-sm",
-              testComplete ? "border-yellow-500" : "",
-              restartFeedback ? "bg-secondary/30 scale-[0.98]" : "",
-              isClient && isFocused ? "ring-2 ring-ring ring-offset-2" : "",
-              isMobile ? "h-[calc(60vh-6rem)]" : "min-h-[16rem]"
-            )}
-            tabIndex={isMobile ? -1 : 0}
-            onFocus={() => {
-              setIsFocused(true);
-              if (isMobile && inputRef.current) {
-                inputRef.current.focus();
-              }
-            }}
-            onBlur={() => setIsFocused(false)}
-          >
-            <div className="text-base sm:text-lg md:text-xl leading-relaxed tracking-wide">{renderText()}</div>
-            
-            <div className="mt-4 sm:mt-6 md:mt-8 flex flex-wrap items-center justify-between text-xs sm:text-sm text-muted-foreground gap-y-2">
-              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-                <span>
-                  {typedText.length}/{text.length} characters
-                </span>
-                {wpm !== null && (
-                  <span>
-                    {wpm} WPM
-                  </span>
-                )}
-                {accuracy !== null && (
-                  <span>
-                    {accuracy}% accuracy
-                  </span>
-                )}
-                {timeRemaining !== null && (
-                  <span className={timeRemaining < 10 ? "text-red-500 font-bold" : ""}>
-                    {timeRemaining}s remaining
-                  </span>
-                )}
-              </div>
-              
-              <div className="flex items-center gap-2">
-                {testComplete ? (
+          <div className="flex items-center gap-2">
+            {testComplete ? (
                   <Button size="sm" onClick={() => setShowResults(true)}>
                     See Results
-                  </Button>
-                ) : (
-                  <div className="text-xs sm:text-sm italic hidden sm:block">
-                    Press <kbd className="px-1 sm:px-2 py-0.5 sm:py-1 bg-muted rounded text-xs">Tab</kbd> + <kbd className="px-1 sm:px-2 py-0.5 sm:py-1 bg-muted rounded text-xs">Enter</kbd> to restart
-                  </div>
-                )}
+              </Button>
+            ) : (
+              <div className="text-xs sm:text-sm italic hidden sm:block">
+                Press <kbd className="px-1 sm:px-2 py-0.5 sm:py-1 bg-muted rounded text-xs">Tab</kbd> + <kbd className="px-1 sm:px-2 py-0.5 sm:py-1 bg-muted rounded text-xs">Enter</kbd> to restart
               </div>
-            </div>
+            )}
           </div>
+        </div>
+      </div>
 
           {/* Add a small message for logged-in users */}
           {session?.user && (

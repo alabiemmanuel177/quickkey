@@ -86,15 +86,15 @@ const LeaderboardTable = ({ data }: LeaderboardTableProps) => {
                 {index === 0 ? (
                   <div className="flex items-center justify-center">
                     <Trophy className="h-5 w-5 text-yellow-500" />
-                  </div>
+                </div>
                 ) : index === 1 ? (
                   <div className="flex items-center justify-center">
                     <Trophy className="h-5 w-5 text-gray-400" />
-                  </div>
+                </div>
                 ) : index === 2 ? (
                   <div className="flex items-center justify-center">
                     <Trophy className="h-5 w-5 text-amber-700" />
-                  </div>
+    </div>
                 ) : (
                   <span className="text-center block">{index + 1}</span>
                 )}

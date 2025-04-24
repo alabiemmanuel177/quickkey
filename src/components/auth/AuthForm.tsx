@@ -196,8 +196,8 @@ export default function AuthForm() {
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="login">Login</TabsTrigger>
         <TabsTrigger value="register">Register</TabsTrigger>
-      </TabsList>
-      
+          </TabsList>
+          
       {/* Login Tab */}
       <TabsContent value="login">
         <Card>
@@ -239,68 +239,68 @@ export default function AuthForm() {
                   Or continue with
                 </span>
               </div>
-            </div>
-            
+              </div>
+              
             {/* Login Form */}
-            <Form {...loginForm}>
+              <Form {...loginForm}>
               <form
                 onSubmit={loginForm.handleSubmit(onLoginSubmit)}
                 className="space-y-4"
               >
-                <FormField
-                  control={loginForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="email@example.com"
+                  <FormField
+                    control={loginForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="email@example.com" 
                           type="email"
                           autoComplete="email"
                           disabled={isLoading}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={loginForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={loginForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input 
                           placeholder="••••••••"
-                          type="password"
+                            type="password" 
                           autoComplete="current-password"
                           disabled={isLoading}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
+                    {isLoading ? (
+                      <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Please wait
-                    </>
+                      </>
                   ) : (
                     "Sign In"
                   )}
-                </Button>
-              </form>
-            </Form>
+                  </Button>
+                </form>
+              </Form>
           </CardContent>
         </Card>
-      </TabsContent>
-      
+            </TabsContent>
+            
       {/* Register Tab */}
       <TabsContent value="register">
         <Card>
@@ -342,84 +342,84 @@ export default function AuthForm() {
                   Or continue with
                 </span>
               </div>
-            </div>
-            
+              </div>
+              
             {/* Register Form */}
-            <Form {...registerForm}>
+              <Form {...registerForm}>
               <form
                 onSubmit={registerForm.handleSubmit(onRegisterSubmit)}
                 className="space-y-4"
               >
-                <FormField
-                  control={registerForm.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="John Doe"
+                  <FormField
+                    control={registerForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="John Doe" 
                           autoComplete="name"
                           disabled={isLoading}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={registerForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="email@example.com"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={registerForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="email@example.com" 
                           type="email"
                           autoComplete="email"
                           disabled={isLoading}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={registerForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={registerForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input 
                           placeholder="••••••••"
-                          type="password"
+                            type="password" 
                           autoComplete="new-password"
-                          disabled={isLoading}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                            disabled={isLoading}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
+                    {isLoading ? (
+                      <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Please wait
-                    </>
+                      </>
                   ) : (
                     "Create Account"
                   )}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+                  </Button>
+                </form>
+              </Form>
+      </CardContent>
+    </Card>
       </TabsContent>
     </Tabs>
   );

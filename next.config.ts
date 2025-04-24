@@ -8,12 +8,6 @@ const deploymentUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}` 
   : 'http://localhost:3000';
 
-// Create domains array with type assertion to fix TypeScript error
-const domains: string[] = ['localhost', 'avatars.githubusercontent.com'];
-if (process.env.VERCEL_URL) {
-  domains.push(process.env.VERCEL_URL);
-}
-
 const nextConfig: NextConfig = {
   /* config options here */
   env: {
@@ -21,11 +15,22 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_BASE_URL: deploymentUrl
   },
   images: {
-    domains,
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost'
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com'
+      },
+      ...(process.env.VERCEL_URL ? [{
+        protocol: 'https',
+        hostname: process.env.VERCEL_URL
+      }] : [])
+    ],
   },
-  experimental: {
-    serverComponentsExternalPackages: [],
-  }
+  serverExternalPackages: [],
 };
 
 export default nextConfig;

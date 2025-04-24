@@ -82,18 +82,18 @@ const Header = () => {
                 </Tooltip>
 
                 {!isAuthenticated && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" asChild>
-                        <Link href="/settings" aria-label="Settings">
-                          <Settings className="h-4 w-4 sm:h-[1.2rem] sm:w-[1.2rem]" />
-                        </Link>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent className="hidden sm:block">
-                      <p>Settings</p>
-                    </TooltipContent>
-                  </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" asChild>
+                      <Link href="/settings" aria-label="Settings">
+                        <Settings className="h-4 w-4 sm:h-[1.2rem] sm:w-[1.2rem]" />
+                      </Link>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="hidden sm:block">
+                    <p>Settings</p>
+                  </TooltipContent>
+                </Tooltip>
                 )}
 
                 <NotificationDrawer />
@@ -134,18 +134,18 @@ const Header = () => {
                   </DropdownMenu>
                 ) : (
                   // Login/Register button for unauthenticated users
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" asChild>
-                        <Link href="/auth" aria-label="Login or Register">
-                          <UserIcon className="h-4 w-4 sm:h-[1.2rem] sm:w-[1.2rem]" />
-                        </Link>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent className="hidden sm:block">
-                      <p>Login / Register</p>
-                    </TooltipContent>
-                  </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" asChild>
+                      <Link href="/auth" aria-label="Login or Register">
+                        <UserIcon className="h-4 w-4 sm:h-[1.2rem] sm:w-[1.2rem]" />
+                      </Link>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="hidden sm:block">
+                    <p>Login / Register</p>
+                  </TooltipContent>
+                </Tooltip>
                 )}
               </TooltipProvider>
             </nav>

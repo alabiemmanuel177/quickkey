@@ -190,7 +190,7 @@ const NotificationDrawer = () => {
               >
                 <div className="flex items-start justify-between">
                   <div className="flex flex-1 items-center">
-                    <h4 className="font-medium">{notification.title}</h4>
+                  <h4 className="font-medium">{notification.title}</h4>
                     <Badge 
                       variant="secondary" 
                       className={`ml-2 text-[10px] ${getNotificationTypeColor(notification.type)}`}
