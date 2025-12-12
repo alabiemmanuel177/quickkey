@@ -1,9 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { sendLeaderboardEmail } from '@/lib/email';
+
+// Helper function to get or create user from Clerk ID
+async function getOrCreateUser(clerkId: string) {
+  let user = await prisma.user.findUnique({
+    where: { clerkId },
+  });
+
+  if (!user) {
+    // Get user details from Clerk
+    const clerkUser = await currentUser();
+
+    user = await prisma.user.create({
+      data: {
+        clerkId,
+        email: clerkUser?.primaryEmailAddress?.emailAddress,
+        name: clerkUser?.fullName || clerkUser?.firstName,
+        image: clerkUser?.imageUrl,
+      },
+    });
+  }
+
+  return user;
+}
 
 // Helper function to check leaderboard position
 async function checkLeaderboardPosition(resultId: string): Promise<number | null> {
@@ -51,28 +73,31 @@ const typingResultSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     // Check authentication status
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user.id) {
+    const { userId: clerkId } = await auth();
+    if (!clerkId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // Get or create user in our database
+    const user = await getOrCreateUser(clerkId);
 
     // Validate input data
     const body = await req.json();
     const result = typingResultSchema.safeParse(body);
-    
+
     if (!result.success) {
       return NextResponse.json(
         { error: 'Invalid input', details: result.error.format() },
         { status: 400 }
       );
     }
-    
+
     const data = result.data;
-    
+
     // Create typing result record
     const typingResult = await prisma.typingResult.create({
       data: {
-        userId: session.user.id,
+        userId: user.id,
         wpm: data.wpm,
         accuracy: data.accuracy,
         charsTyped: data.charsTyped,
@@ -81,18 +106,13 @@ export async function POST(req: NextRequest) {
         testType: data.testType,
       },
     });
-    
+
     // Check if this result qualifies for leaderboard (top 10)
     const leaderboardPosition = await checkLeaderboardPosition(typingResult.id);
 
     // If in top 10, send leaderboard achievement email
     if (leaderboardPosition !== null && leaderboardPosition <= 10) {
-      const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { email: true, name: true },
-      });
-
-      if (user?.email) {
+      if (user.email) {
         sendLeaderboardEmail(
           user.email,
           user.name || 'Typist',
@@ -123,20 +143,29 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     // Check authentication status
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user.id) {
+    const { userId: clerkId } = await auth();
+    if (!clerkId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Get user from database
+    const user = await prisma.user.findUnique({
+      where: { clerkId },
+    });
+
+    if (!user) {
+      return NextResponse.json({ typingResults: [], totalCount: 0 });
     }
 
     // Get query parameters
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = parseInt(searchParams.get('offset') || '0');
-    
+
     // Get typing results for the user
     const typingResults = await prisma.typingResult.findMany({
       where: {
-        userId: session.user.id,
+        userId: user.id,
       },
       orderBy: {
         createdAt: 'desc',
@@ -144,19 +173,19 @@ export async function GET(req: NextRequest) {
       take: limit,
       skip: offset,
     });
-    
+
     // Get total count
     const totalCount = await prisma.typingResult.count({
       where: {
-        userId: session.user.id,
+        userId: user.id,
       },
     });
-    
-    return NextResponse.json({ 
+
+    return NextResponse.json({
       typingResults,
       totalCount,
     });
-    
+
   } catch (error) {
     console.error('Error fetching typing results:', error);
     return NextResponse.json(
@@ -164,4 +193,4 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

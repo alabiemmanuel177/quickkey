@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { SimpleButton } from "@/components/ui/simple-button";
 import { useToast } from "@/components/ui/use-toast";
 import TestOptionsHeader, { TestOptions } from "./TestOptionsHeader";
 import useSoundSettings from "@/hooks/useSoundSettings";
@@ -16,7 +16,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { CheckCircle, AlertCircle, BarChart2, RefreshCcw, LogIn } from "lucide-react";
 import Link from "next/link";
@@ -175,7 +174,7 @@ const longPunctuationNumbersTexts = [
 ];
 
 const TypingTest: React.FC = () => {
-  const { data: session } = useSession();
+  const { user, isSignedIn } = useUser();
   const { toast } = useToast();
   const [testOptions, setTestOptions] = useState<TestOptions>({
     punctuation: false,
@@ -183,6 +182,7 @@ const TypingTest: React.FC = () => {
     time: 60,
     mode: "words"
   });
+  const [isLoadingAI, setIsLoadingAI] = useState(true); // Start loading AI content
   
   // Get sound settings hook
   const { 
@@ -230,6 +230,33 @@ const TypingTest: React.FC = () => {
     const textPool = getTextPool();
     return textPool[Math.floor(Math.random() * textPool.length)];
   }, [getTextPool]);
+
+  // Fetch AI-generated text - accepts options directly to avoid stale closure issues
+  const fetchAIText = useCallback(async (options?: TestOptions): Promise<string | null> => {
+    const opts = options || testOptions;
+    try {
+      const response = await fetch("/api/generate-text", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: opts.mode,
+          time: opts.time,
+          punctuation: opts.punctuation,
+          numbers: opts.numbers
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate text");
+      }
+
+      const data = await response.json();
+      return data.text;
+    } catch (error) {
+      console.error("AI text generation error:", error);
+      return null;
+    }
+  }, [testOptions]);
   
   // Start with a fixed initial text to avoid hydration mismatch
   const [text, setText] = useState<string>(wordTexts[0]);
@@ -292,17 +319,24 @@ const TypingTest: React.FC = () => {
     }
   }, [soundInitialized, soundSettings.enabled]);
 
-  // Handle option changes
-  const handleOptionsChange = (newOptions: TestOptions) => {
-    setTestOptions(newOptions);
-    restartTest();
-  };
-
-  // Focus input or container based on device type
+  // Focus input or container based on device type and load AI content
   useEffect(() => {
     setIsClient(true);
-    setText(getRandomText());
-    
+
+    // Load AI content on mount
+    const loadInitialContent = async () => {
+      setIsLoadingAI(true);
+      const aiText = await fetchAIText();
+      if (aiText) {
+        setText(aiText);
+      } else {
+        setText(getRandomText());
+      }
+      setIsLoadingAI(false);
+    };
+
+    loadInitialContent();
+
     // Short delay to ensure focus works after hydration
     const focusTimer = setTimeout(() => {
       if (isMobile && inputRef.current) {
@@ -312,9 +346,10 @@ const TypingTest: React.FC = () => {
       }
       setIsFocused(true);
     }, 100);
-    
+
     return () => clearTimeout(focusTimer);
-  }, [getRandomText, isMobile]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Timer for countdown
   useEffect(() => {
@@ -344,7 +379,7 @@ const TypingTest: React.FC = () => {
 
   // Add this new function to save test results
   const saveTestResult = useCallback(async () => {
-    if (!session || !session.user || !wpm || !accuracy) return;
+    if (!isSignedIn || !user || !wpm || !accuracy) return;
     
     try {
       const correctChars = typedText.split('').filter((char, i) => text[i] === char).length;
@@ -376,7 +411,7 @@ const TypingTest: React.FC = () => {
     } catch (error) {
       console.error('Error saving test result:', error);
     }
-  }, [session, wpm, accuracy, typedText, text, testOptions, toast]);
+  }, [isSignedIn, user, wpm, accuracy, typedText, text, testOptions, toast]);
 
   // Modify the useEffect that monitors test completion to also calculate new metrics
   useEffect(() => {
@@ -452,16 +487,16 @@ const TypingTest: React.FC = () => {
       }
       
       // Save test results if user is logged in
-      if (session?.user) {
+      if (isSignedIn) {
         saveTestResult();
       }
     }
-  }, [typedText, text, startTime, testComplete, testOptions.time, timeRemaining, session, saveTestResult, typingData, peakWpm]);
+  }, [typedText, text, startTime, testComplete, testOptions.time, timeRemaining, isSignedIn, saveTestResult, typingData, peakWpm]);
 
   // Restart the test and show visual feedback
-  const restartTest = useCallback(() => {
+  // Accepts optional options to use for fetching (avoids stale closure issues)
+  const restartTest = useCallback(async (options?: TestOptions) => {
     setTypedText("");
-    setText(getRandomText());
     setStartTime(null);
     setWpm(null);
     setAccuracy(null);
@@ -471,15 +506,27 @@ const TypingTest: React.FC = () => {
     setTypingData([]);
     setCorrectChars(0);
     setIncorrectChars(0);
-    
+    setPeakWpm(0);
+
     // Show restart feedback animation
     setRestartFeedback(true);
     setTimeout(() => setRestartFeedback(false), 300);
-    
+
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
-    
+
+    // Try to fetch AI-generated content, fallback to local text
+    // Pass options directly to avoid stale state issues
+    setIsLoadingAI(true);
+    const aiText = await fetchAIText(options);
+    if (aiText) {
+      setText(aiText);
+    } else {
+      setText(getRandomText());
+    }
+    setIsLoadingAI(false);
+
     // Focus the appropriate element based on device
     setTimeout(() => {
       if (isMobile && inputRef.current) {
@@ -488,7 +535,13 @@ const TypingTest: React.FC = () => {
         containerRef.current.focus();
       }
     }, 100);
-  }, [getRandomText, isMobile]);
+  }, [getRandomText, isMobile, fetchAIText]);
+
+  // Handle option changes - pass new options directly to avoid stale closure
+  const handleOptionsChange = useCallback((newOptions: TestOptions) => {
+    setTestOptions(newOptions);
+    restartTest(newOptions); // Pass options directly
+  }, [restartTest]);
 
   // Listen for custom restart event from Command Line
   useEffect(() => {
@@ -753,7 +806,7 @@ const TypingTest: React.FC = () => {
             </div>
           </div>
           
-          <Separator />
+          <div className="h-px w-full bg-border" />
           
           {/* Performance graph */}
           <div className="pt-2">
@@ -850,23 +903,23 @@ const TypingTest: React.FC = () => {
         </CardContent>
         
         <CardFooter className="flex flex-col sm:flex-row gap-3 justify-between">
-          <Button 
-            variant="outline" 
-            size="lg" 
+          <SimpleButton
+            variant="outline"
+            size="lg"
             className="w-full sm:w-auto"
-            onClick={restartTest}
+            onClick={() => restartTest()}
           >
             <RefreshCcw className="mr-2 h-4 w-4" />
             Take Another Test
-          </Button>
-          
-          {!session?.user ? (
-            <Button asChild size="lg" className="w-full sm:w-auto">
-              <Link href="/auth">
+          </SimpleButton>
+
+          {!isSignedIn ? (
+            <Link href="/auth" className="w-full sm:w-auto">
+              <SimpleButton size="lg" className="w-full">
                 <LogIn className="mr-2 h-4 w-4" />
                 Sign in to Save Results
-              </Link>
-            </Button>
+              </SimpleButton>
+            </Link>
           ) : (
             <div className="flex items-center text-sm text-muted-foreground">
               <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
@@ -885,37 +938,39 @@ const TypingTest: React.FC = () => {
       {/* Show either the typing test or the results screen */}
       {!showResults ? (
         <>
-      {/* Hidden input for mobile keyboards */}
-      <input
-        ref={inputRef}
-        type="text"
-        className={cn(
-          "sr-only opacity-0 h-0",
-          isMobile ? "absolute pointer-events-auto" : "hidden pointer-events-none"
-        )}
-        aria-label="Typing input"
-        autoComplete="off"
-        autoCorrect="off"
-        autoCapitalize="off"
-        spellCheck="false"
-        onChange={handleInputChange}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-      />
+      {/* Hidden input for mobile keyboards - only render after hydration to avoid mismatch */}
+      {isClient && (
+        <input
+          ref={inputRef}
+          type="text"
+          className={cn(
+            "sr-only opacity-0 h-0",
+            isMobile ? "absolute pointer-events-auto" : "hidden pointer-events-none"
+          )}
+          aria-label="Typing input"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck="false"
+          onChange={handleInputChange}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+        />
+      )}
       
       <div 
         ref={containerRef}
         className={cn(
-          "w-full max-w-full p-4 sm:p-6 md:p-8 rounded-lg border border-border",
+          "w-full p-6 sm:p-8 md:p-10 lg:p-12 rounded-xl border border-border",
           "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
           "transition-all duration-200 ease-in-out",
-          "bg-background shadow-sm",
-          testComplete ? "border-yellow-500" : "",
-          restartFeedback ? "bg-secondary/30 scale-[0.98]" : "",
-          isClient && isFocused ? "ring-2 ring-ring ring-offset-2" : "",
-          isMobile ? "h-[calc(60vh-6rem)]" : "min-h-[16rem]"
+          "bg-background shadow-sm min-h-[22rem] md:min-h-[28rem]",
+          testComplete && "border-yellow-500",
+          restartFeedback && "bg-secondary/30 scale-[0.98]",
+          isClient && isFocused && "ring-2 ring-ring ring-offset-2",
+          isClient && isMobile && "h-[calc(70vh-6rem)]"
         )}
-        tabIndex={isMobile ? -1 : 0}
+        tabIndex={isClient && isMobile ? -1 : 0}
         onFocus={() => {
           setIsFocused(true);
           if (isMobile && inputRef.current) {
@@ -924,7 +979,16 @@ const TypingTest: React.FC = () => {
         }}
         onBlur={() => setIsFocused(false)}
       >
-        <div className="text-base sm:text-lg md:text-xl leading-relaxed tracking-wide">{renderText()}</div>
+        {isLoadingAI ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="flex flex-col items-center gap-3">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+              <span className="text-muted-foreground text-sm">Generating text with AI...</span>
+            </div>
+          </div>
+        ) : (
+          <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl leading-relaxed md:leading-loose tracking-wide font-mono">{renderText()}</div>
+        )}
         
         <div className="mt-4 sm:mt-6 md:mt-8 flex flex-wrap items-center justify-between text-xs sm:text-sm text-muted-foreground gap-y-2">
           <div className="flex flex-wrap items-center gap-2 sm:gap-4">
@@ -950,9 +1014,9 @@ const TypingTest: React.FC = () => {
           
           <div className="flex items-center gap-2">
             {testComplete ? (
-                  <Button size="sm" onClick={() => setShowResults(true)}>
-                    See Results
-              </Button>
+              <SimpleButton size="sm" onClick={() => setShowResults(true)}>
+                See Results
+              </SimpleButton>
             ) : (
               <div className="text-xs sm:text-sm italic hidden sm:block">
                 Press <kbd className="px-1 sm:px-2 py-0.5 sm:py-1 bg-muted rounded text-xs">Tab</kbd> + <kbd className="px-1 sm:px-2 py-0.5 sm:py-1 bg-muted rounded text-xs">Enter</kbd> to restart
@@ -963,7 +1027,7 @@ const TypingTest: React.FC = () => {
       </div>
 
           {/* Add a small message for logged-in users */}
-          {session?.user && (
+          {isSignedIn && (
             <div className="mt-2 text-xs text-center text-muted-foreground">
               Your results will be saved to your profile and may appear on the leaderboard.
             </div>

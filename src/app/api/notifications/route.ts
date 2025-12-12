@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { z } from 'zod';
 
 // Schema for validating notification creation
@@ -14,9 +13,9 @@ const notificationSchema = z.object({
 
 // Get user notifications
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const { userId: clerkId } = await auth();
 
-  if (!session?.user?.email) {
+  if (!clerkId) {
     return NextResponse.json(
       { error: "You must be logged in to view notifications" },
       { status: 401 }
@@ -24,13 +23,13 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Get user
+    // Get user by Clerk ID
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { clerkId },
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ notifications: [], unreadCount: 0 });
     }
 
     // Fetch notifications for the user
@@ -61,9 +60,9 @@ export async function GET(req: NextRequest) {
 
 // Create a new notification
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const { userId: clerkId } = await auth();
 
-  if (!session?.user?.email) {
+  if (!clerkId) {
     return NextResponse.json(
       { error: "You must be logged in to create notifications" },
       { status: 401 }
@@ -80,9 +79,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get user
+    // Get user by Clerk ID
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { clerkId },
     });
 
     if (!user) {
@@ -110,11 +109,11 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// PATCH /api/notifications/:id - Mark notification as read
+// PATCH /api/notifications - Mark notification as read
 export async function PATCH(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const { userId: clerkId } = await auth();
 
-  if (!session?.user?.email) {
+  if (!clerkId) {
     return NextResponse.json(
       { error: "You must be logged in to update notifications" },
       { status: 401 }
@@ -131,9 +130,9 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    // Get user
+    // Get user by Clerk ID
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { clerkId },
     });
 
     if (!user) {
@@ -176,11 +175,11 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
-// DELETE /api/notifications/:id - Delete a notification
+// DELETE /api/notifications - Delete a notification
 export async function DELETE(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const { userId: clerkId } = await auth();
 
-  if (!session?.user?.email) {
+  if (!clerkId) {
     return NextResponse.json(
       { error: "You must be logged in to delete notifications" },
       { status: 401 }
@@ -198,9 +197,9 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    // Get user
+    // Get user by Clerk ID
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { clerkId },
     });
 
     if (!user) {
@@ -240,4 +239,4 @@ export async function DELETE(req: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

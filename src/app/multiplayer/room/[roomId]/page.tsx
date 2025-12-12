@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useSearchParams } from "next/navigation";
-import { io, Socket } from "socket.io-client";
+import { getPusherClient, disconnectPusher } from "@/lib/pusher-client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import MultiplayerTypingTest from "@/components/multiplayer/MultiplayerTypingTest";
@@ -26,10 +26,13 @@ interface PlayerResult {
   finishedAt: number;
 }
 
+// Generate a unique player ID for this session
+const generatePlayerId = () => Math.random().toString(36).substring(2, 15);
+
 export default function RoomPage() {
   const params = useParams();
   const searchParams = useSearchParams();
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [playerId] = useState(() => generatePlayerId());
   const [isHost, setIsHost] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [opponentReady, setOpponentReady] = useState(false);
@@ -49,75 +52,102 @@ export default function RoomPage() {
   const settings: GameSettings = JSON.parse(searchParams.get("settings") || '{"testType":"words","duration":"60"}');
   const finishTimeRef = useRef<number | null>(null);
 
+  // Helper function to trigger events through API
+  const triggerEvent = useCallback(async (event: string, data: Record<string, unknown>) => {
+    try {
+      await fetch("/api/pusher/event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roomId, event, data }),
+      });
+    } catch (error) {
+      console.error("Failed to trigger event:", error);
+    }
+  }, [roomId]);
+
   // Copy room code to clipboard
   const copyRoomCode = () => {
     navigator.clipboard.writeText(roomId);
     toast.success("Room code copied to clipboard!");
   };
 
-  // Initialize socket connection
+  // Initialize Pusher connection
   useEffect(() => {
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || window.location.origin;
-    const newSocket = io(socketUrl, {
-      path: "/api/socketio",
-      transports: ["polling", "websocket"],
-    });
-    setSocket(newSocket);
-
-    newSocket.emit("join-room", roomId);
+    const pusher = getPusherClient();
+    const roomChannel = pusher.subscribe(`room-${roomId}`);
 
     // Check if this is the host
     if (searchParams.get("settings")) {
       setIsHost(true);
     }
 
-    // Socket event handlers
-    newSocket.on("opponent-joined", () => {
-      setOpponentConnected(true);
-      toast.success("An opponent has joined the room!");
+    // Notify others that we joined
+    triggerEvent("player-joined", { playerId });
+
+    // Event handlers
+    roomChannel.bind("player-joined", (data: { playerId: string }) => {
+      if (data.playerId !== playerId) {
+        setOpponentConnected(true);
+        toast.success("An opponent has joined the room!");
+      }
     });
 
-    newSocket.on("opponent-left", () => {
-      setOpponentConnected(false);
-      setOpponentReady(false);
-      toast.error("Your opponent has left the room");
+    roomChannel.bind("player-left", (data: { playerId: string }) => {
+      if (data.playerId !== playerId) {
+        setOpponentConnected(false);
+        setOpponentReady(false);
+        toast.error("Your opponent has left the room");
+      }
     });
 
-    newSocket.on("opponent-ready", () => {
-      setOpponentReady(true);
-      toast.success("Opponent is ready!");
+    roomChannel.bind("player-ready", (data: { playerId: string }) => {
+      if (data.playerId !== playerId) {
+        setOpponentReady(true);
+        toast.success("Opponent is ready!");
+      }
     });
 
-    newSocket.on("game-starting", (countdownValue: number) => {
-      setCountdown(countdownValue);
-      if (countdownValue === 0) {
+    roomChannel.bind("game-starting", (data: { countdown: number }) => {
+      setCountdown(data.countdown);
+      if (data.countdown === 0) {
         setGameStarted(true);
         setCountdown(null);
       }
     });
 
-    newSocket.on("opponent-progress", (progress: OpponentProgress) => {
-      setOpponentProgress(progress);
+    roomChannel.bind("progress-update", (data: { playerId: string; progress: number; wpm: number }) => {
+      if (data.playerId !== playerId) {
+        setOpponentProgress({ progress: data.progress, wpm: data.wpm });
+      }
     });
 
-    newSocket.on("opponent-finish", (data: PlayerResult) => {
-      setOpponentResult(data);
-      // Winner determination happens in the finish handler when both results are available
+    roomChannel.bind("player-finished", (data: { playerId: string; wpm: number; accuracy: number; finishedAt: number }) => {
+      if (data.playerId !== playerId) {
+        setOpponentResult({ wpm: data.wpm, accuracy: data.accuracy, finishedAt: data.finishedAt });
+      }
     });
 
-    newSocket.on("rematch-offer", () => {
-      setOpponentRequestedRematch(true);
-      toast.info("Opponent wants a rematch!");
+    roomChannel.bind("rematch-request", (data: { playerId: string }) => {
+      if (data.playerId !== playerId) {
+        setOpponentRequestedRematch(true);
+        toast.info("Opponent wants a rematch!");
+      }
     });
 
-    newSocket.on("rematch-accepted", () => {
-      resetGame();
+    roomChannel.bind("rematch-accepted", (data: { playerId: string }) => {
+      if (data.playerId !== playerId) {
+        resetGame();
+      }
     });
 
     return () => {
-      newSocket.disconnect();
+      triggerEvent("player-left", { playerId });
+      roomChannel.unbind_all();
+      pusher.unsubscribe(`room-${roomId}`);
+      disconnectPusher();
     };
-  }, [roomId, searchParams]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomId, playerId]);
 
   // Determine winner based on results
   const determineWinner = useCallback((my: PlayerResult, opponent: PlayerResult) => {
@@ -156,28 +186,26 @@ export default function RoomPage() {
 
   // Handle ready button
   const handleReady = () => {
-    if (socket) {
-      setIsReady(true);
-      socket.emit("player-ready", roomId);
+    setIsReady(true);
+    triggerEvent("player-ready", { playerId });
 
-      // If both players are ready, start the countdown
-      if (opponentReady && isHost) {
-        startCountdown();
-      }
+    // If both players are ready, start the countdown
+    if (opponentReady && isHost) {
+      startCountdown();
     }
   };
 
   // Start game countdown (host only)
   const startCountdown = useCallback(() => {
-    if (!socket || !isHost) return;
+    if (!isHost) return;
 
     let count = 3;
-    socket.emit("game-starting", { roomId, countdown: count });
+    triggerEvent("game-starting", { countdown: count });
     setCountdown(count);
 
     const countdownInterval = setInterval(() => {
       count--;
-      socket.emit("game-starting", { roomId, countdown: count });
+      triggerEvent("game-starting", { countdown: count });
       setCountdown(count);
 
       if (count === 0) {
@@ -186,7 +214,7 @@ export default function RoomPage() {
         setCountdown(null);
       }
     }, 1000);
-  }, [socket, isHost, roomId]);
+  }, [isHost, triggerEvent]);
 
   // Check if both players are ready to start
   useEffect(() => {
@@ -198,9 +226,7 @@ export default function RoomPage() {
   // Handle progress update
   const handleProgressUpdate = (progress: number, wpm: number) => {
     setMyProgress({ progress, wpm });
-    if (socket) {
-      socket.emit("progress-update", { roomId, progress, wpm });
-    }
+    triggerEvent("progress-update", { playerId, progress, wpm });
   };
 
   // Handle test completion
@@ -211,9 +237,7 @@ export default function RoomPage() {
     const result: PlayerResult = { wpm, accuracy, finishedAt };
     setMyResult(result);
 
-    if (socket) {
-      socket.emit("finish", { roomId, ...result });
-    }
+    triggerEvent("player-finished", { playerId, ...result });
 
     // If opponent already finished, determine winner
     if (opponentResult) {
@@ -240,17 +264,15 @@ export default function RoomPage() {
 
   // Handle rematch request
   const handleRematch = () => {
-    if (socket) {
-      if (opponentRequestedRematch) {
-        // Accept rematch
-        socket.emit("rematch-accepted", roomId);
-        resetGame();
-      } else {
-        // Request rematch
-        setRematchRequested(true);
-        socket.emit("rematch-request", roomId);
-        toast.info("Rematch request sent!");
-      }
+    if (opponentRequestedRematch) {
+      // Accept rematch
+      triggerEvent("rematch-accepted", { playerId });
+      resetGame();
+    } else {
+      // Request rematch
+      setRematchRequested(true);
+      triggerEvent("rematch-request", { playerId });
+      toast.info("Rematch request sent!");
     }
   };
 

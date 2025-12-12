@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSession, signOut } from "next-auth/react";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Trophy, InfoIcon, Settings, UserIcon, LogOut } from "lucide-react";
@@ -23,20 +23,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import NotificationDrawer from "./NotificationDrawer";
 
 const Header = () => {
-  const { data: session, status } = useSession();
-  const isAuthenticated = status === "authenticated";
+  const { user, isSignedIn, isLoaded } = useUser();
+  const { signOut } = useClerk();
+  const isAuthenticated = isLoaded && isSignedIn;
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: "/" });
+    signOut({ redirectUrl: "/" });
   };
 
   const getUserInitials = () => {
-    if (!session?.user?.name) return "U";
-    return session.user.name
-      .split(" ")
-      .map(name => name[0])
-      .join("")
-      .toUpperCase();
+    if (!user?.firstName && !user?.lastName) return "U";
+    const first = user.firstName?.[0] || "";
+    const last = user.lastName?.[0] || "";
+    return (first + last).toUpperCase() || "U";
   };
 
   return (
@@ -106,9 +105,9 @@ const Header = () => {
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 rounded-full">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage 
-                            src={session?.user?.image || ""} 
-                            alt={session?.user?.name || "User"} 
+                          <AvatarImage
+                            src={user?.imageUrl || ""}
+                            alt={user?.fullName || "User"}
                           />
                           <AvatarFallback>{getUserInitials()}</AvatarFallback>
                         </Avatar>
@@ -116,7 +115,7 @@ const Header = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>
-                        {session?.user?.name || "User"}
+                        {user?.fullName || user?.primaryEmailAddress?.emailAddress || "User"}
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>

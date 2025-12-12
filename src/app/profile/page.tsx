@@ -1,11 +1,11 @@
 import { Metadata } from "next";
-import { getServerSession } from "next-auth";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
+import { SignOutButton } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
   title: "QuickKey - Profile",
@@ -13,16 +13,19 @@ export const metadata: Metadata = {
 };
 
 export default async function ProfilePage() {
-  const session = await getServerSession(authOptions);
-  
-  if (!session?.user) {
+  const { userId: clerkId } = await auth();
+
+  if (!clerkId) {
     redirect("/auth");
   }
-  
-  // Get user with typing results
-  const user = await prisma.user.findUnique({
+
+  // Get Clerk user info
+  const clerkUser = await currentUser();
+
+  // Get user with typing results from our database
+  let user = await prisma.user.findUnique({
     where: {
-      id: session.user.id,
+      clerkId,
     },
     include: {
       typingResults: {
@@ -34,23 +37,43 @@ export default async function ProfilePage() {
     },
   });
 
+  // Create user if doesn't exist
   if (!user) {
-    redirect("/auth");
+    user = await prisma.user.create({
+      data: {
+        clerkId,
+        email: clerkUser?.primaryEmailAddress?.emailAddress,
+        name: clerkUser?.fullName || clerkUser?.firstName,
+        image: clerkUser?.imageUrl,
+      },
+      include: {
+        typingResults: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 5,
+        },
+      },
+    });
   }
 
   // Calculate average metrics
-  const averageWpm = user.typingResults.length 
-    ? user.typingResults.reduce((sum, result) => sum + result.wpm, 0) / user.typingResults.length 
+  const averageWpm = user.typingResults.length
+    ? user.typingResults.reduce((sum, result) => sum + result.wpm, 0) / user.typingResults.length
     : 0;
-  
-  const averageAccuracy = user.typingResults.length 
-    ? user.typingResults.reduce((sum, result) => sum + result.accuracy, 0) / user.typingResults.length 
+
+  const averageAccuracy = user.typingResults.length
+    ? user.typingResults.reduce((sum, result) => sum + result.accuracy, 0) / user.typingResults.length
     : 0;
+
+  const displayName = clerkUser?.fullName || clerkUser?.firstName || user.name || "User";
+  const displayEmail = clerkUser?.primaryEmailAddress?.emailAddress || user.email;
+  const displayImage = clerkUser?.imageUrl || user.image;
 
   return (
     <div className="container py-10 flex flex-col items-center">
       <h1 className="text-3xl font-bold mb-8">Your Profile</h1>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl w-full">
         {/* User Info Card */}
         <Card>
@@ -59,10 +82,10 @@ export default async function ProfilePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-col items-center gap-4">
-              {user.image ? (
+              {displayImage ? (
                 <Image
-                  src={user.image}
-                  alt={user.name || "Profile picture"}
+                  src={displayImage}
+                  alt={displayName}
                   width={80}
                   height={80}
                   className="rounded-full"
@@ -70,28 +93,30 @@ export default async function ProfilePage() {
               ) : (
                 <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center">
                   <span className="text-2xl font-bold">
-                    {user.name?.charAt(0).toUpperCase() || "U"}
+                    {displayName.charAt(0).toUpperCase()}
                   </span>
                 </div>
               )}
               <div className="text-center">
-                <h2 className="text-xl font-semibold">{user.name}</h2>
-                <p className="text-sm text-muted-foreground">{user.email}</p>
+                <h2 className="text-xl font-semibold">{displayName}</h2>
+                <p className="text-sm text-muted-foreground">{displayEmail}</p>
               </div>
             </div>
-            
+
             <div className="pt-4">
               <p className="text-sm text-muted-foreground">
                 Member since {new Date(user.createdAt).toLocaleDateString()}
               </p>
             </div>
-            
-            <Button className="w-full" asChild>
-              <a href="/api/auth/signout">Sign Out</a>
-            </Button>
+
+            <SignOutButton>
+              <Button className="w-full" variant="outline">
+                Sign Out
+              </Button>
+            </SignOutButton>
           </CardContent>
         </Card>
-        
+
         {/* Stats Card */}
         <Card className="md:col-span-2">
           <CardHeader>
@@ -108,13 +133,13 @@ export default async function ProfilePage() {
                 <p className="text-3xl font-bold">{averageAccuracy.toFixed(1)}%</p>
               </div>
             </div>
-            
+
             <h3 className="text-lg font-semibold mb-4">Recent Tests</h3>
             {user.typingResults.length > 0 ? (
               <div className="space-y-4">
                 {user.typingResults.map((result) => (
-                  <div 
-                    key={result.id} 
+                  <div
+                    key={result.id}
                     className="flex justify-between items-center p-3 border rounded-md"
                   >
                     <div>
@@ -149,4 +174,4 @@ export default async function ProfilePage() {
       </div>
     </div>
   );
-} 
+}

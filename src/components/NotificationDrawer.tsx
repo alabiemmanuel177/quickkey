@@ -18,7 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@clerk/nextjs";
 import axios from "axios";
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -34,14 +34,16 @@ interface Notification {
 }
 
 const NotificationDrawer = () => {
-  const { data: session, status } = useSession();
+  const { isSignedIn, isLoaded } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const isAuthenticated = isLoaded && isSignedIn;
+
   const fetchNotifications = async () => {
-    if (status !== "authenticated") return;
+    if (!isAuthenticated) return;
     
     try {
       setIsLoading(true);
@@ -95,12 +97,12 @@ const NotificationDrawer = () => {
     }
   };
 
-  // Fetch notifications when drawer opens or session changes
+  // Fetch notifications when drawer opens or auth state changes
   useEffect(() => {
-    if (isOpen && status === "authenticated") {
+    if (isOpen && isAuthenticated) {
       fetchNotifications();
     }
-  }, [isOpen, status]);
+  }, [isOpen, isAuthenticated]);
 
   const getNotificationTypeColor = (type: string) => {
     switch (type) {
@@ -136,7 +138,7 @@ const NotificationDrawer = () => {
                 size="icon"
                 className="relative"
                 aria-label="Notifications"
-                onClick={() => status === "authenticated" && fetchNotifications()}
+                onClick={() => isAuthenticated && fetchNotifications()}
               >
                 <BellIcon className="h-[1.2rem] w-[1.2rem]" />
                 {unreadCount > 0 && (
@@ -170,7 +172,7 @@ const NotificationDrawer = () => {
             <p className="text-center text-muted-foreground py-8">
               Loading notifications...
             </p>
-          ) : status !== "authenticated" ? (
+          ) : !isAuthenticated ? (
             <p className="text-center text-muted-foreground py-8">
               Sign in to view your notifications.
             </p>
