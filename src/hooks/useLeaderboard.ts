@@ -9,141 +9,64 @@ export interface LeaderboardEntry {
   userAvatar: string;
   wpm: number;
   accuracy: number;
-  testType: "time" | "words";
+  testType: string;
   duration: string;
   createdAt: string;
 }
 
 export interface LeaderboardOptions {
-  testType: "time" | "words";
+  testType: "time" | "words" | "quote";
   duration: string;
   sortBy: "wpm" | "accuracy" | "recent";
+  timeFilter?: "all" | "daily" | "weekly" | "monthly";
 }
 
 interface UseLeaderboardReturn {
   entries: LeaderboardEntry[];
   isLoading: boolean;
   error: Error | null;
+  totalCount: number;
   refresh: () => void;
 }
 
-/**
- * Mock data for the leaderboard
- */
-const MOCK_ENTRIES: LeaderboardEntry[] = [
-  {
-    id: "1",
-    userName: "TypeMaster",
-    userAvatar: "",
-    wpm: 145,
-    accuracy: 98.5,
-    testType: "time",
-    duration: "30",
-    createdAt: new Date(2023, 7, 15).toISOString(),
-  },
-  {
-    id: "2",
-    userName: "SpeedTyper",
-    userAvatar: "",
-    wpm: 132,
-    accuracy: 97.2,
-    testType: "time",
-    duration: "30",
-    createdAt: new Date(2023, 8, 2).toISOString(),
-  },
-  {
-    id: "3",
-    userName: "QuickFingers",
-    userAvatar: "",
-    wpm: 128,
-    accuracy: 96.8,
-    testType: "time",
-    duration: "30",
-    createdAt: new Date(2023, 8, 10).toISOString(),
-  },
-  {
-    id: "4",
-    userName: "KeyboardNinja",
-    userAvatar: "",
-    wpm: 125,
-    accuracy: 95.5,
-    testType: "time",
-    duration: "30",
-    createdAt: new Date(2023, 8, 15).toISOString(),
-  },
-  {
-    id: "5",
-    userName: "SwiftKeys",
-    userAvatar: "",
-    wpm: 118,
-    accuracy: 94.7,
-    testType: "time",
-    duration: "30",
-    createdAt: new Date(2023, 8, 18).toISOString(),
-  },
-  {
-    id: "6",
-    userName: "RapidTypist",
-    userAvatar: "",
-    wpm: 115,
-    accuracy: 93.8,
-    testType: "time",
-    duration: "30",
-    createdAt: new Date(2023, 8, 20).toISOString(),
-  },
-  {
-    id: "7",
-    userName: "FlashWriter",
-    userAvatar: "",
-    wpm: 112,
-    accuracy: 92.9,
-    testType: "time",
-    duration: "30",
-    createdAt: new Date(2023, 8, 25).toISOString(),
-  },
-  {
-    id: "8",
-    userName: "TypePro",
-    userAvatar: "",
-    wpm: 108,
-    accuracy: 91.5,
-    testType: "time",
-    duration: "30",
-    createdAt: new Date(2023, 9, 1).toISOString(),
-  },
-  {
-    id: "9",
-    userName: "KeyMaster",
-    userAvatar: "",
-    wpm: 105,
-    accuracy: 90.8,
-    testType: "time",
-    duration: "30",
-    createdAt: new Date(2023, 9, 5).toISOString(),
-  },
-  {
-    id: "10",
-    userName: "SpeedyFingers",
-    userAvatar: "",
-    wpm: 102,
-    accuracy: 89.5,
-    testType: "time",
-    duration: "30",
-    createdAt: new Date(2023, 9, 10).toISOString(),
-  },
-];
+// API response types
+interface ApiLeaderboardEntry {
+  id: string;
+  wpm: number;
+  accuracy: number;
+  testType: string;
+  testDuration: number;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  };
+}
+
+interface ApiResponse {
+  leaderboard: ApiLeaderboardEntry[];
+  totalCount: number;
+  filters: {
+    timeFilter: string;
+    testType: string;
+    minTestDuration: number;
+  };
+}
 
 /**
- * Hook to fetch and manage leaderboard data
+ * Hook to fetch and manage leaderboard data from the API
  */
 export function useLeaderboard({
   testType,
   duration,
   sortBy,
+  timeFilter = "all",
 }: LeaderboardOptions): UseLeaderboardReturn {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Function to trigger a refresh
@@ -156,30 +79,58 @@ export function useLeaderboard({
     setIsLoading(true);
     setError(null);
 
-    // Simulate API fetch with a delay
     const fetchData = async () => {
       try {
-        // Simulate network request
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        // Build query parameters
+        const params = new URLSearchParams({
+          timeFilter,
+          limit: "50",
+        });
 
-        // Filter by test type and duration
-        let filtered = MOCK_ENTRIES.filter(
-          (entry) => entry.testType === testType && entry.duration === duration
-        );
+        // Add test type filter (map "time" to "words" for API compatibility)
+        if (testType && testType !== "time") {
+          params.append("testType", testType);
+        } else if (testType === "time") {
+          params.append("testType", "words");
+        }
 
-        // Sort by the selected criterion
-        if (sortBy === "wpm") {
-          filtered = filtered.sort((a, b) => b.wpm - a.wpm);
-        } else if (sortBy === "accuracy") {
-          filtered = filtered.sort((a, b) => b.accuracy - a.accuracy);
+        // Add minimum test duration filter
+        if (duration) {
+          params.append("minTestDuration", duration);
+        }
+
+        const response = await fetch(`/api/leaderboard?${params.toString()}`);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch leaderboard data");
+        }
+
+        const data: ApiResponse = await response.json();
+
+        // Transform API response to LeaderboardEntry format
+        let transformedEntries: LeaderboardEntry[] = data.leaderboard.map((entry) => ({
+          id: entry.id,
+          userName: entry.user.name || "Anonymous",
+          userAvatar: entry.user.image || "",
+          wpm: entry.wpm,
+          accuracy: entry.accuracy,
+          testType: entry.testType,
+          duration: entry.testDuration.toString(),
+          createdAt: entry.createdAt,
+        }));
+
+        // Sort by the selected criterion (API already sorts by WPM)
+        if (sortBy === "accuracy") {
+          transformedEntries = transformedEntries.sort((a, b) => b.accuracy - a.accuracy);
         } else if (sortBy === "recent") {
-          filtered = filtered.sort(
+          transformedEntries = transformedEntries.sort(
             (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
         }
 
         if (isMounted) {
-          setEntries(filtered);
+          setEntries(transformedEntries);
+          setTotalCount(data.totalCount);
           setIsLoading(false);
         }
       } catch (err) {
@@ -195,7 +146,7 @@ export function useLeaderboard({
     return () => {
       isMounted = false;
     };
-  }, [testType, duration, sortBy, refreshKey]);
+  }, [testType, duration, sortBy, timeFilter, refreshKey]);
 
-  return { entries, isLoading, error, refresh };
+  return { entries, isLoading, error, totalCount, refresh };
 } 

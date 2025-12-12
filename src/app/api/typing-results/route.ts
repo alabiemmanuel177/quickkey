@@ -3,6 +3,39 @@ import { getServerSession } from 'next-auth';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { sendLeaderboardEmail } from '@/lib/email';
+
+// Helper function to check leaderboard position
+async function checkLeaderboardPosition(resultId: string): Promise<number | null> {
+  try {
+    // Get the result that was just created
+    const result = await prisma.typingResult.findUnique({
+      where: { id: resultId },
+    });
+
+    if (!result) return null;
+
+    // Count how many results have higher WPM (with accuracy as tiebreaker)
+    const higherResults = await prisma.typingResult.count({
+      where: {
+        OR: [
+          { wpm: { gt: result.wpm } },
+          {
+            wpm: result.wpm,
+            accuracy: { gt: result.accuracy },
+          },
+        ],
+        accuracy: { gte: 70 }, // Only count results with 70%+ accuracy
+      },
+    });
+
+    // Position is 1 + count of higher results
+    return higherResults + 1;
+  } catch (error) {
+    console.error('Error checking leaderboard position:', error);
+    return null;
+  }
+}
 
 // Schema for validating typing result input
 const typingResultSchema = z.object({
@@ -49,11 +82,34 @@ export async function POST(req: NextRequest) {
       },
     });
     
-    return NextResponse.json({ 
+    // Check if this result qualifies for leaderboard (top 10)
+    const leaderboardPosition = await checkLeaderboardPosition(typingResult.id);
+
+    // If in top 10, send leaderboard achievement email
+    if (leaderboardPosition !== null && leaderboardPosition <= 10) {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { email: true, name: true },
+      });
+
+      if (user?.email) {
+        sendLeaderboardEmail(
+          user.email,
+          user.name || 'Typist',
+          leaderboardPosition,
+          data.wpm
+        ).catch((err) => {
+          console.error('Failed to send leaderboard email:', err);
+        });
+      }
+    }
+
+    return NextResponse.json({
       message: 'Typing result saved successfully',
       typingResult,
+      leaderboardPosition,
     }, { status: 201 });
-    
+
   } catch (error) {
     console.error('Error saving typing result:', error);
     return NextResponse.json(

@@ -6,6 +6,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import * as argon2 from 'argon2';
 import { prisma } from '@/lib/prisma';
+import { sendLoginEmail } from '@/lib/email';
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -76,6 +77,33 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
   },
   callbacks: {
+    async signIn({ user, account }) {
+      // Send login notification email (only for existing users, not new signups)
+      if (user.email && account?.provider) {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email },
+        });
+
+        // Only send for existing users (not new registrations)
+        if (existingUser && existingUser.createdAt < new Date(Date.now() - 60000)) {
+          const time = new Date().toLocaleString('en-US', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+          });
+
+          sendLoginEmail(
+            user.email,
+            user.name || 'User',
+            time,
+            account.provider === 'credentials' ? 'Email/Password' : account.provider,
+            'Web'
+          ).catch((err) => {
+            console.error('Failed to send login email:', err);
+          });
+        }
+      }
+      return true;
+    },
     async session({ session, token }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;

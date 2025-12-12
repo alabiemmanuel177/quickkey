@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { createWelcomeNotification } from '@/lib/notification-utils';
+import { sendWelcomeEmail } from '@/lib/email';
 
 // Schema for validating registration input
 const registerSchema = z.object({
@@ -63,7 +64,12 @@ export async function POST(req: NextRequest) {
     
     // Create a welcome notification for the new user
     await createWelcomeNotification(user.id);
-    
+
+    // Send welcome email (non-blocking)
+    sendWelcomeEmail(email, name).catch((err) => {
+      console.error('Failed to send welcome email:', err);
+    });
+
     return NextResponse.json(
       { 
         message: 'User registered successfully',

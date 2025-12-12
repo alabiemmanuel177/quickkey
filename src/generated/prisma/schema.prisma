@@ -91,3 +91,12 @@ model Notification {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+// Multiplayer Room model
+model MultiplayerRoom {
+  id        String   @id
+  status    String   @default("waiting") // waiting, in-progress, completed
+  hostId    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

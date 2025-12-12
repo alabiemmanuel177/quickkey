@@ -178,6 +178,14 @@ exports.Prisma.NotificationScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.MultiplayerRoomScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  hostId: 'hostId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -200,7 +208,8 @@ exports.Prisma.ModelName = {
   User: 'User',
   VerificationToken: 'VerificationToken',
   TypingResult: 'TypingResult',
-  Notification: 'Notification'
+  Notification: 'Notification',
+  MultiplayerRoom: 'MultiplayerRoom'
 };
 
 /**

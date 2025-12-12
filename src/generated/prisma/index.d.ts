@@ -43,6 +43,11 @@ export type TypingResult = $Result.DefaultSelection<Prisma.$TypingResultPayload>
  * 
  */
 export type Notification = $Result.DefaultSelection<Prisma.$NotificationPayload>
+/**
+ * Model MultiplayerRoom
+ * 
+ */
+export type MultiplayerRoom = $Result.DefaultSelection<Prisma.$MultiplayerRoomPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -228,6 +233,16 @@ export class PrismaClient<
     * ```
     */
   get notification(): Prisma.NotificationDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.multiplayerRoom`: Exposes CRUD operations for the **MultiplayerRoom** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more MultiplayerRooms
+    * const multiplayerRooms = await prisma.multiplayerRoom.findMany()
+    * ```
+    */
+  get multiplayerRoom(): Prisma.MultiplayerRoomDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -673,7 +688,8 @@ export namespace Prisma {
     User: 'User',
     VerificationToken: 'VerificationToken',
     TypingResult: 'TypingResult',
-    Notification: 'Notification'
+    Notification: 'Notification',
+    MultiplayerRoom: 'MultiplayerRoom'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -692,7 +708,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "session" | "user" | "verificationToken" | "typingResult" | "notification"
+      modelProps: "account" | "session" | "user" | "verificationToken" | "typingResult" | "notification" | "multiplayerRoom"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1140,6 +1156,80 @@ export namespace Prisma {
           }
         }
       }
+      MultiplayerRoom: {
+        payload: Prisma.$MultiplayerRoomPayload<ExtArgs>
+        fields: Prisma.MultiplayerRoomFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.MultiplayerRoomFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MultiplayerRoomPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.MultiplayerRoomFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MultiplayerRoomPayload>
+          }
+          findFirst: {
+            args: Prisma.MultiplayerRoomFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MultiplayerRoomPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.MultiplayerRoomFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MultiplayerRoomPayload>
+          }
+          findMany: {
+            args: Prisma.MultiplayerRoomFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MultiplayerRoomPayload>[]
+          }
+          create: {
+            args: Prisma.MultiplayerRoomCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MultiplayerRoomPayload>
+          }
+          createMany: {
+            args: Prisma.MultiplayerRoomCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.MultiplayerRoomCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MultiplayerRoomPayload>[]
+          }
+          delete: {
+            args: Prisma.MultiplayerRoomDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MultiplayerRoomPayload>
+          }
+          update: {
+            args: Prisma.MultiplayerRoomUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MultiplayerRoomPayload>
+          }
+          deleteMany: {
+            args: Prisma.MultiplayerRoomDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.MultiplayerRoomUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.MultiplayerRoomUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MultiplayerRoomPayload>[]
+          }
+          upsert: {
+            args: Prisma.MultiplayerRoomUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MultiplayerRoomPayload>
+          }
+          aggregate: {
+            args: Prisma.MultiplayerRoomAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMultiplayerRoom>
+          }
+          groupBy: {
+            args: Prisma.MultiplayerRoomGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MultiplayerRoomGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.MultiplayerRoomCountArgs<ExtArgs>
+            result: $Utils.Optional<MultiplayerRoomCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1230,6 +1320,7 @@ export namespace Prisma {
     verificationToken?: VerificationTokenOmit
     typingResult?: TypingResultOmit
     notification?: NotificationOmit
+    multiplayerRoom?: MultiplayerRoomOmit
   }
 
   /* Types for Logging */
@@ -8016,6 +8107,1001 @@ export namespace Prisma {
 
 
   /**
+   * Model MultiplayerRoom
+   */
+
+  export type AggregateMultiplayerRoom = {
+    _count: MultiplayerRoomCountAggregateOutputType | null
+    _min: MultiplayerRoomMinAggregateOutputType | null
+    _max: MultiplayerRoomMaxAggregateOutputType | null
+  }
+
+  export type MultiplayerRoomMinAggregateOutputType = {
+    id: string | null
+    status: string | null
+    hostId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type MultiplayerRoomMaxAggregateOutputType = {
+    id: string | null
+    status: string | null
+    hostId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type MultiplayerRoomCountAggregateOutputType = {
+    id: number
+    status: number
+    hostId: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type MultiplayerRoomMinAggregateInputType = {
+    id?: true
+    status?: true
+    hostId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type MultiplayerRoomMaxAggregateInputType = {
+    id?: true
+    status?: true
+    hostId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type MultiplayerRoomCountAggregateInputType = {
+    id?: true
+    status?: true
+    hostId?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type MultiplayerRoomAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MultiplayerRoom to aggregate.
+     */
+    where?: MultiplayerRoomWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MultiplayerRooms to fetch.
+     */
+    orderBy?: MultiplayerRoomOrderByWithRelationInput | MultiplayerRoomOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: MultiplayerRoomWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MultiplayerRooms from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MultiplayerRooms.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned MultiplayerRooms
+    **/
+    _count?: true | MultiplayerRoomCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: MultiplayerRoomMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: MultiplayerRoomMaxAggregateInputType
+  }
+
+  export type GetMultiplayerRoomAggregateType<T extends MultiplayerRoomAggregateArgs> = {
+        [P in keyof T & keyof AggregateMultiplayerRoom]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMultiplayerRoom[P]>
+      : GetScalarType<T[P], AggregateMultiplayerRoom[P]>
+  }
+
+
+
+
+  export type MultiplayerRoomGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MultiplayerRoomWhereInput
+    orderBy?: MultiplayerRoomOrderByWithAggregationInput | MultiplayerRoomOrderByWithAggregationInput[]
+    by: MultiplayerRoomScalarFieldEnum[] | MultiplayerRoomScalarFieldEnum
+    having?: MultiplayerRoomScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: MultiplayerRoomCountAggregateInputType | true
+    _min?: MultiplayerRoomMinAggregateInputType
+    _max?: MultiplayerRoomMaxAggregateInputType
+  }
+
+  export type MultiplayerRoomGroupByOutputType = {
+    id: string
+    status: string
+    hostId: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: MultiplayerRoomCountAggregateOutputType | null
+    _min: MultiplayerRoomMinAggregateOutputType | null
+    _max: MultiplayerRoomMaxAggregateOutputType | null
+  }
+
+  type GetMultiplayerRoomGroupByPayload<T extends MultiplayerRoomGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<MultiplayerRoomGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof MultiplayerRoomGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], MultiplayerRoomGroupByOutputType[P]>
+            : GetScalarType<T[P], MultiplayerRoomGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type MultiplayerRoomSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    status?: boolean
+    hostId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["multiplayerRoom"]>
+
+  export type MultiplayerRoomSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    status?: boolean
+    hostId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["multiplayerRoom"]>
+
+  export type MultiplayerRoomSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    status?: boolean
+    hostId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["multiplayerRoom"]>
+
+  export type MultiplayerRoomSelectScalar = {
+    id?: boolean
+    status?: boolean
+    hostId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type MultiplayerRoomOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "hostId" | "createdAt" | "updatedAt", ExtArgs["result"]["multiplayerRoom"]>
+
+  export type $MultiplayerRoomPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "MultiplayerRoom"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      status: string
+      hostId: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["multiplayerRoom"]>
+    composites: {}
+  }
+
+  type MultiplayerRoomGetPayload<S extends boolean | null | undefined | MultiplayerRoomDefaultArgs> = $Result.GetResult<Prisma.$MultiplayerRoomPayload, S>
+
+  type MultiplayerRoomCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MultiplayerRoomFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: MultiplayerRoomCountAggregateInputType | true
+    }
+
+  export interface MultiplayerRoomDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MultiplayerRoom'], meta: { name: 'MultiplayerRoom' } }
+    /**
+     * Find zero or one MultiplayerRoom that matches the filter.
+     * @param {MultiplayerRoomFindUniqueArgs} args - Arguments to find a MultiplayerRoom
+     * @example
+     * // Get one MultiplayerRoom
+     * const multiplayerRoom = await prisma.multiplayerRoom.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends MultiplayerRoomFindUniqueArgs>(args: SelectSubset<T, MultiplayerRoomFindUniqueArgs<ExtArgs>>): Prisma__MultiplayerRoomClient<$Result.GetResult<Prisma.$MultiplayerRoomPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one MultiplayerRoom that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {MultiplayerRoomFindUniqueOrThrowArgs} args - Arguments to find a MultiplayerRoom
+     * @example
+     * // Get one MultiplayerRoom
+     * const multiplayerRoom = await prisma.multiplayerRoom.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends MultiplayerRoomFindUniqueOrThrowArgs>(args: SelectSubset<T, MultiplayerRoomFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MultiplayerRoomClient<$Result.GetResult<Prisma.$MultiplayerRoomPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MultiplayerRoom that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MultiplayerRoomFindFirstArgs} args - Arguments to find a MultiplayerRoom
+     * @example
+     * // Get one MultiplayerRoom
+     * const multiplayerRoom = await prisma.multiplayerRoom.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends MultiplayerRoomFindFirstArgs>(args?: SelectSubset<T, MultiplayerRoomFindFirstArgs<ExtArgs>>): Prisma__MultiplayerRoomClient<$Result.GetResult<Prisma.$MultiplayerRoomPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MultiplayerRoom that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MultiplayerRoomFindFirstOrThrowArgs} args - Arguments to find a MultiplayerRoom
+     * @example
+     * // Get one MultiplayerRoom
+     * const multiplayerRoom = await prisma.multiplayerRoom.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends MultiplayerRoomFindFirstOrThrowArgs>(args?: SelectSubset<T, MultiplayerRoomFindFirstOrThrowArgs<ExtArgs>>): Prisma__MultiplayerRoomClient<$Result.GetResult<Prisma.$MultiplayerRoomPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more MultiplayerRooms that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MultiplayerRoomFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all MultiplayerRooms
+     * const multiplayerRooms = await prisma.multiplayerRoom.findMany()
+     * 
+     * // Get first 10 MultiplayerRooms
+     * const multiplayerRooms = await prisma.multiplayerRoom.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const multiplayerRoomWithIdOnly = await prisma.multiplayerRoom.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends MultiplayerRoomFindManyArgs>(args?: SelectSubset<T, MultiplayerRoomFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MultiplayerRoomPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a MultiplayerRoom.
+     * @param {MultiplayerRoomCreateArgs} args - Arguments to create a MultiplayerRoom.
+     * @example
+     * // Create one MultiplayerRoom
+     * const MultiplayerRoom = await prisma.multiplayerRoom.create({
+     *   data: {
+     *     // ... data to create a MultiplayerRoom
+     *   }
+     * })
+     * 
+     */
+    create<T extends MultiplayerRoomCreateArgs>(args: SelectSubset<T, MultiplayerRoomCreateArgs<ExtArgs>>): Prisma__MultiplayerRoomClient<$Result.GetResult<Prisma.$MultiplayerRoomPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many MultiplayerRooms.
+     * @param {MultiplayerRoomCreateManyArgs} args - Arguments to create many MultiplayerRooms.
+     * @example
+     * // Create many MultiplayerRooms
+     * const multiplayerRoom = await prisma.multiplayerRoom.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends MultiplayerRoomCreateManyArgs>(args?: SelectSubset<T, MultiplayerRoomCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many MultiplayerRooms and returns the data saved in the database.
+     * @param {MultiplayerRoomCreateManyAndReturnArgs} args - Arguments to create many MultiplayerRooms.
+     * @example
+     * // Create many MultiplayerRooms
+     * const multiplayerRoom = await prisma.multiplayerRoom.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many MultiplayerRooms and only return the `id`
+     * const multiplayerRoomWithIdOnly = await prisma.multiplayerRoom.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends MultiplayerRoomCreateManyAndReturnArgs>(args?: SelectSubset<T, MultiplayerRoomCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MultiplayerRoomPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a MultiplayerRoom.
+     * @param {MultiplayerRoomDeleteArgs} args - Arguments to delete one MultiplayerRoom.
+     * @example
+     * // Delete one MultiplayerRoom
+     * const MultiplayerRoom = await prisma.multiplayerRoom.delete({
+     *   where: {
+     *     // ... filter to delete one MultiplayerRoom
+     *   }
+     * })
+     * 
+     */
+    delete<T extends MultiplayerRoomDeleteArgs>(args: SelectSubset<T, MultiplayerRoomDeleteArgs<ExtArgs>>): Prisma__MultiplayerRoomClient<$Result.GetResult<Prisma.$MultiplayerRoomPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one MultiplayerRoom.
+     * @param {MultiplayerRoomUpdateArgs} args - Arguments to update one MultiplayerRoom.
+     * @example
+     * // Update one MultiplayerRoom
+     * const multiplayerRoom = await prisma.multiplayerRoom.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends MultiplayerRoomUpdateArgs>(args: SelectSubset<T, MultiplayerRoomUpdateArgs<ExtArgs>>): Prisma__MultiplayerRoomClient<$Result.GetResult<Prisma.$MultiplayerRoomPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more MultiplayerRooms.
+     * @param {MultiplayerRoomDeleteManyArgs} args - Arguments to filter MultiplayerRooms to delete.
+     * @example
+     * // Delete a few MultiplayerRooms
+     * const { count } = await prisma.multiplayerRoom.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends MultiplayerRoomDeleteManyArgs>(args?: SelectSubset<T, MultiplayerRoomDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MultiplayerRooms.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MultiplayerRoomUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many MultiplayerRooms
+     * const multiplayerRoom = await prisma.multiplayerRoom.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends MultiplayerRoomUpdateManyArgs>(args: SelectSubset<T, MultiplayerRoomUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MultiplayerRooms and returns the data updated in the database.
+     * @param {MultiplayerRoomUpdateManyAndReturnArgs} args - Arguments to update many MultiplayerRooms.
+     * @example
+     * // Update many MultiplayerRooms
+     * const multiplayerRoom = await prisma.multiplayerRoom.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more MultiplayerRooms and only return the `id`
+     * const multiplayerRoomWithIdOnly = await prisma.multiplayerRoom.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends MultiplayerRoomUpdateManyAndReturnArgs>(args: SelectSubset<T, MultiplayerRoomUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MultiplayerRoomPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one MultiplayerRoom.
+     * @param {MultiplayerRoomUpsertArgs} args - Arguments to update or create a MultiplayerRoom.
+     * @example
+     * // Update or create a MultiplayerRoom
+     * const multiplayerRoom = await prisma.multiplayerRoom.upsert({
+     *   create: {
+     *     // ... data to create a MultiplayerRoom
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the MultiplayerRoom we want to update
+     *   }
+     * })
+     */
+    upsert<T extends MultiplayerRoomUpsertArgs>(args: SelectSubset<T, MultiplayerRoomUpsertArgs<ExtArgs>>): Prisma__MultiplayerRoomClient<$Result.GetResult<Prisma.$MultiplayerRoomPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of MultiplayerRooms.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MultiplayerRoomCountArgs} args - Arguments to filter MultiplayerRooms to count.
+     * @example
+     * // Count the number of MultiplayerRooms
+     * const count = await prisma.multiplayerRoom.count({
+     *   where: {
+     *     // ... the filter for the MultiplayerRooms we want to count
+     *   }
+     * })
+    **/
+    count<T extends MultiplayerRoomCountArgs>(
+      args?: Subset<T, MultiplayerRoomCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], MultiplayerRoomCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a MultiplayerRoom.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MultiplayerRoomAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends MultiplayerRoomAggregateArgs>(args: Subset<T, MultiplayerRoomAggregateArgs>): Prisma.PrismaPromise<GetMultiplayerRoomAggregateType<T>>
+
+    /**
+     * Group by MultiplayerRoom.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MultiplayerRoomGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends MultiplayerRoomGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: MultiplayerRoomGroupByArgs['orderBy'] }
+        : { orderBy?: MultiplayerRoomGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, MultiplayerRoomGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMultiplayerRoomGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the MultiplayerRoom model
+   */
+  readonly fields: MultiplayerRoomFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for MultiplayerRoom.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__MultiplayerRoomClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the MultiplayerRoom model
+   */
+  interface MultiplayerRoomFieldRefs {
+    readonly id: FieldRef<"MultiplayerRoom", 'String'>
+    readonly status: FieldRef<"MultiplayerRoom", 'String'>
+    readonly hostId: FieldRef<"MultiplayerRoom", 'String'>
+    readonly createdAt: FieldRef<"MultiplayerRoom", 'DateTime'>
+    readonly updatedAt: FieldRef<"MultiplayerRoom", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * MultiplayerRoom findUnique
+   */
+  export type MultiplayerRoomFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MultiplayerRoom
+     */
+    select?: MultiplayerRoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MultiplayerRoom
+     */
+    omit?: MultiplayerRoomOmit<ExtArgs> | null
+    /**
+     * Filter, which MultiplayerRoom to fetch.
+     */
+    where: MultiplayerRoomWhereUniqueInput
+  }
+
+  /**
+   * MultiplayerRoom findUniqueOrThrow
+   */
+  export type MultiplayerRoomFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MultiplayerRoom
+     */
+    select?: MultiplayerRoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MultiplayerRoom
+     */
+    omit?: MultiplayerRoomOmit<ExtArgs> | null
+    /**
+     * Filter, which MultiplayerRoom to fetch.
+     */
+    where: MultiplayerRoomWhereUniqueInput
+  }
+
+  /**
+   * MultiplayerRoom findFirst
+   */
+  export type MultiplayerRoomFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MultiplayerRoom
+     */
+    select?: MultiplayerRoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MultiplayerRoom
+     */
+    omit?: MultiplayerRoomOmit<ExtArgs> | null
+    /**
+     * Filter, which MultiplayerRoom to fetch.
+     */
+    where?: MultiplayerRoomWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MultiplayerRooms to fetch.
+     */
+    orderBy?: MultiplayerRoomOrderByWithRelationInput | MultiplayerRoomOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MultiplayerRooms.
+     */
+    cursor?: MultiplayerRoomWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MultiplayerRooms from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MultiplayerRooms.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MultiplayerRooms.
+     */
+    distinct?: MultiplayerRoomScalarFieldEnum | MultiplayerRoomScalarFieldEnum[]
+  }
+
+  /**
+   * MultiplayerRoom findFirstOrThrow
+   */
+  export type MultiplayerRoomFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MultiplayerRoom
+     */
+    select?: MultiplayerRoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MultiplayerRoom
+     */
+    omit?: MultiplayerRoomOmit<ExtArgs> | null
+    /**
+     * Filter, which MultiplayerRoom to fetch.
+     */
+    where?: MultiplayerRoomWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MultiplayerRooms to fetch.
+     */
+    orderBy?: MultiplayerRoomOrderByWithRelationInput | MultiplayerRoomOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MultiplayerRooms.
+     */
+    cursor?: MultiplayerRoomWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MultiplayerRooms from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MultiplayerRooms.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MultiplayerRooms.
+     */
+    distinct?: MultiplayerRoomScalarFieldEnum | MultiplayerRoomScalarFieldEnum[]
+  }
+
+  /**
+   * MultiplayerRoom findMany
+   */
+  export type MultiplayerRoomFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MultiplayerRoom
+     */
+    select?: MultiplayerRoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MultiplayerRoom
+     */
+    omit?: MultiplayerRoomOmit<ExtArgs> | null
+    /**
+     * Filter, which MultiplayerRooms to fetch.
+     */
+    where?: MultiplayerRoomWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MultiplayerRooms to fetch.
+     */
+    orderBy?: MultiplayerRoomOrderByWithRelationInput | MultiplayerRoomOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing MultiplayerRooms.
+     */
+    cursor?: MultiplayerRoomWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MultiplayerRooms from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MultiplayerRooms.
+     */
+    skip?: number
+    distinct?: MultiplayerRoomScalarFieldEnum | MultiplayerRoomScalarFieldEnum[]
+  }
+
+  /**
+   * MultiplayerRoom create
+   */
+  export type MultiplayerRoomCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MultiplayerRoom
+     */
+    select?: MultiplayerRoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MultiplayerRoom
+     */
+    omit?: MultiplayerRoomOmit<ExtArgs> | null
+    /**
+     * The data needed to create a MultiplayerRoom.
+     */
+    data: XOR<MultiplayerRoomCreateInput, MultiplayerRoomUncheckedCreateInput>
+  }
+
+  /**
+   * MultiplayerRoom createMany
+   */
+  export type MultiplayerRoomCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many MultiplayerRooms.
+     */
+    data: MultiplayerRoomCreateManyInput | MultiplayerRoomCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * MultiplayerRoom createManyAndReturn
+   */
+  export type MultiplayerRoomCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MultiplayerRoom
+     */
+    select?: MultiplayerRoomSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the MultiplayerRoom
+     */
+    omit?: MultiplayerRoomOmit<ExtArgs> | null
+    /**
+     * The data used to create many MultiplayerRooms.
+     */
+    data: MultiplayerRoomCreateManyInput | MultiplayerRoomCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * MultiplayerRoom update
+   */
+  export type MultiplayerRoomUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MultiplayerRoom
+     */
+    select?: MultiplayerRoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MultiplayerRoom
+     */
+    omit?: MultiplayerRoomOmit<ExtArgs> | null
+    /**
+     * The data needed to update a MultiplayerRoom.
+     */
+    data: XOR<MultiplayerRoomUpdateInput, MultiplayerRoomUncheckedUpdateInput>
+    /**
+     * Choose, which MultiplayerRoom to update.
+     */
+    where: MultiplayerRoomWhereUniqueInput
+  }
+
+  /**
+   * MultiplayerRoom updateMany
+   */
+  export type MultiplayerRoomUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update MultiplayerRooms.
+     */
+    data: XOR<MultiplayerRoomUpdateManyMutationInput, MultiplayerRoomUncheckedUpdateManyInput>
+    /**
+     * Filter which MultiplayerRooms to update
+     */
+    where?: MultiplayerRoomWhereInput
+    /**
+     * Limit how many MultiplayerRooms to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * MultiplayerRoom updateManyAndReturn
+   */
+  export type MultiplayerRoomUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MultiplayerRoom
+     */
+    select?: MultiplayerRoomSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the MultiplayerRoom
+     */
+    omit?: MultiplayerRoomOmit<ExtArgs> | null
+    /**
+     * The data used to update MultiplayerRooms.
+     */
+    data: XOR<MultiplayerRoomUpdateManyMutationInput, MultiplayerRoomUncheckedUpdateManyInput>
+    /**
+     * Filter which MultiplayerRooms to update
+     */
+    where?: MultiplayerRoomWhereInput
+    /**
+     * Limit how many MultiplayerRooms to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * MultiplayerRoom upsert
+   */
+  export type MultiplayerRoomUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MultiplayerRoom
+     */
+    select?: MultiplayerRoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MultiplayerRoom
+     */
+    omit?: MultiplayerRoomOmit<ExtArgs> | null
+    /**
+     * The filter to search for the MultiplayerRoom to update in case it exists.
+     */
+    where: MultiplayerRoomWhereUniqueInput
+    /**
+     * In case the MultiplayerRoom found by the `where` argument doesn't exist, create a new MultiplayerRoom with this data.
+     */
+    create: XOR<MultiplayerRoomCreateInput, MultiplayerRoomUncheckedCreateInput>
+    /**
+     * In case the MultiplayerRoom was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<MultiplayerRoomUpdateInput, MultiplayerRoomUncheckedUpdateInput>
+  }
+
+  /**
+   * MultiplayerRoom delete
+   */
+  export type MultiplayerRoomDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MultiplayerRoom
+     */
+    select?: MultiplayerRoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MultiplayerRoom
+     */
+    omit?: MultiplayerRoomOmit<ExtArgs> | null
+    /**
+     * Filter which MultiplayerRoom to delete.
+     */
+    where: MultiplayerRoomWhereUniqueInput
+  }
+
+  /**
+   * MultiplayerRoom deleteMany
+   */
+  export type MultiplayerRoomDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MultiplayerRooms to delete
+     */
+    where?: MultiplayerRoomWhereInput
+    /**
+     * Limit how many MultiplayerRooms to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * MultiplayerRoom without action
+   */
+  export type MultiplayerRoomDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MultiplayerRoom
+     */
+    select?: MultiplayerRoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MultiplayerRoom
+     */
+    omit?: MultiplayerRoomOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -8106,6 +9192,17 @@ export namespace Prisma {
   };
 
   export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
+
+
+  export const MultiplayerRoomScalarFieldEnum: {
+    id: 'id',
+    status: 'status',
+    hostId: 'hostId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type MultiplayerRoomScalarFieldEnum = (typeof MultiplayerRoomScalarFieldEnum)[keyof typeof MultiplayerRoomScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -8610,6 +9707,58 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"Notification"> | Date | string
   }
 
+  export type MultiplayerRoomWhereInput = {
+    AND?: MultiplayerRoomWhereInput | MultiplayerRoomWhereInput[]
+    OR?: MultiplayerRoomWhereInput[]
+    NOT?: MultiplayerRoomWhereInput | MultiplayerRoomWhereInput[]
+    id?: StringFilter<"MultiplayerRoom"> | string
+    status?: StringFilter<"MultiplayerRoom"> | string
+    hostId?: StringNullableFilter<"MultiplayerRoom"> | string | null
+    createdAt?: DateTimeFilter<"MultiplayerRoom"> | Date | string
+    updatedAt?: DateTimeFilter<"MultiplayerRoom"> | Date | string
+  }
+
+  export type MultiplayerRoomOrderByWithRelationInput = {
+    id?: SortOrder
+    status?: SortOrder
+    hostId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type MultiplayerRoomWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: MultiplayerRoomWhereInput | MultiplayerRoomWhereInput[]
+    OR?: MultiplayerRoomWhereInput[]
+    NOT?: MultiplayerRoomWhereInput | MultiplayerRoomWhereInput[]
+    status?: StringFilter<"MultiplayerRoom"> | string
+    hostId?: StringNullableFilter<"MultiplayerRoom"> | string | null
+    createdAt?: DateTimeFilter<"MultiplayerRoom"> | Date | string
+    updatedAt?: DateTimeFilter<"MultiplayerRoom"> | Date | string
+  }, "id">
+
+  export type MultiplayerRoomOrderByWithAggregationInput = {
+    id?: SortOrder
+    status?: SortOrder
+    hostId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: MultiplayerRoomCountOrderByAggregateInput
+    _max?: MultiplayerRoomMaxOrderByAggregateInput
+    _min?: MultiplayerRoomMinOrderByAggregateInput
+  }
+
+  export type MultiplayerRoomScalarWhereWithAggregatesInput = {
+    AND?: MultiplayerRoomScalarWhereWithAggregatesInput | MultiplayerRoomScalarWhereWithAggregatesInput[]
+    OR?: MultiplayerRoomScalarWhereWithAggregatesInput[]
+    NOT?: MultiplayerRoomScalarWhereWithAggregatesInput | MultiplayerRoomScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"MultiplayerRoom"> | string
+    status?: StringWithAggregatesFilter<"MultiplayerRoom"> | string
+    hostId?: StringNullableWithAggregatesFilter<"MultiplayerRoom"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"MultiplayerRoom"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"MultiplayerRoom"> | Date | string
+  }
+
   export type AccountCreateInput = {
     id?: string
     type: string
@@ -9047,6 +10196,62 @@ export namespace Prisma {
     read?: BoolFieldUpdateOperationsInput | boolean
     type?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MultiplayerRoomCreateInput = {
+    id: string
+    status?: string
+    hostId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MultiplayerRoomUncheckedCreateInput = {
+    id: string
+    status?: string
+    hostId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MultiplayerRoomUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    hostId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MultiplayerRoomUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    hostId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MultiplayerRoomCreateManyInput = {
+    id: string
+    status?: string
+    hostId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MultiplayerRoomUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    hostId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MultiplayerRoomUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    hostId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -9524,6 +10729,30 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBoolFilter<$PrismaModel>
     _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type MultiplayerRoomCountOrderByAggregateInput = {
+    id?: SortOrder
+    status?: SortOrder
+    hostId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type MultiplayerRoomMaxOrderByAggregateInput = {
+    id?: SortOrder
+    status?: SortOrder
+    hostId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type MultiplayerRoomMinOrderByAggregateInput = {
+    id?: SortOrder
+    status?: SortOrder
+    hostId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type UserCreateNestedOneWithoutAccountsInput = {
