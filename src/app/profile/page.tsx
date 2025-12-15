@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
 import { SignOutButton } from "@clerk/nextjs";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "QuickKey - Profile",
@@ -165,7 +166,7 @@ export default async function ProfilePage() {
               <div className="text-center py-8">
                 <p className="text-muted-foreground">No typing tests completed yet.</p>
                 <Button className="mt-4" asChild>
-                  <a href="/">Take a Test</a>
+                  <Link href="/">Take a Test</Link>
                 </Button>
               </div>
             )}

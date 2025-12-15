@@ -10,9 +10,6 @@ const deploymentUrl = process.env.VERCEL_URL
 
 const nextConfig: NextConfig = {
   /* config options here */
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   env: {
     NEXT_PUBLIC_APP_VERSION: version,
     NEXT_PUBLIC_BASE_URL: deploymentUrl

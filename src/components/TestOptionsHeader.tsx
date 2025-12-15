@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { Hash, Clock, Type, Quote, FileText } from "lucide-react";
+import { Hash, Type, Quote, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface TestOptions {

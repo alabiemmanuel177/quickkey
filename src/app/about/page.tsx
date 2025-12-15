@@ -176,10 +176,10 @@ export default function AboutPage() {
         <div className="border rounded-lg p-8 space-y-4 bg-muted/30">
           <h2 className="text-2xl font-semibold text-center">Meet the Creator</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Hi there! I'm the creator and developer behind QuickKey. Inspired by my friend @kiishigod's typing game on Twitter, I thought "how hard could it be?" That challenge led me to build QuickKey - a minimalist typing test built in Next.js in under 3 hours! 🚀🔤
+            Hi there! I&apos;m the creator and developer behind QuickKey. Inspired by my friend @kiishigod&apos;s typing game on Twitter, I thought &quot;how hard could it be?&quot; That challenge led me to build QuickKey - a minimalist typing test built in Next.js in under 3 hours! 🚀🔤
           </p>
           <p className="text-muted-foreground leading-relaxed">
-            What started as a quick project has evolved into something I'm excited to share and continue improving. I hope you enjoy using it as much as I enjoyed creating it!
+            What started as a quick project has evolved into something I&apos;m excited to share and continue improving. I hope you enjoy using it as much as I enjoyed creating it!
           </p>
           <div className="flex justify-center mt-4">
             <Button variant="outline" asChild>
