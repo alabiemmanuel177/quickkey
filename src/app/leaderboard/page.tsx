@@ -73,11 +73,12 @@ async function getLeaderboardData(
 export default async function LeaderboardPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   // Get filter parameters from URL or use defaults
-  const timeFilterParam = searchParams?.time ?? "all";
-  const testTypeParam = searchParams?.type ?? "words";
+  const params = await searchParams;
+  const timeFilterParam = params?.time ?? "all";
+  const testTypeParam = params?.type ?? "words";
   
   const timeFilter = typeof timeFilterParam === "string" ? timeFilterParam : "all";
   const testType = typeof testTypeParam === "string" ? testTypeParam : "words";

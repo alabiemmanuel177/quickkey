@@ -10,6 +10,7 @@ export async function createWelcomeNotification(userId: string) {
         userId,
         title: "Welcome to QuickKey!",
         message: "Thank you for joining QuickKey. Start taking typing tests to improve your speed and accuracy!",
+        type: "welcome",
         read: false,
       },
     });
@@ -52,6 +53,7 @@ export async function createLeaderboardNotification(
         userId,
         title,
         message,
+        type: "achievement",
         read: false,
       },
     });
@@ -75,6 +77,7 @@ export async function createPersonalBestNotification(
         userId,
         title: "🎯 New Personal Best!",
         message: `You just set a new personal best on a ${testType} test with ${wpm} WPM! That's ${improvement.toFixed(2)} WPM faster than your previous record.`,
+        type: "achievement",
         read: false,
       },
     });
@@ -103,6 +106,7 @@ export async function createMilestoneNotification(userId: string, wpm: number) {
         userId,
         title: `🚀 ${milestone} WPM Club!`,
         message: `Congratulations on reaching ${milestone}+ WPM! Your dedication to improving is paying off.`,
+        type: "achievement",
         read: false,
       },
     });

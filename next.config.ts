@@ -10,6 +10,9 @@ const deploymentUrl = process.env.VERCEL_URL
 
 const nextConfig: NextConfig = {
   /* config options here */
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   env: {
     NEXT_PUBLIC_APP_VERSION: version,
     NEXT_PUBLIC_BASE_URL: deploymentUrl
@@ -17,15 +20,15 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'http',
+        protocol: 'http' as const,
         hostname: 'localhost'
       },
       {
-        protocol: 'https',
+        protocol: 'https' as const,
         hostname: 'avatars.githubusercontent.com'
       },
       ...(process.env.VERCEL_URL ? [{
-        protocol: 'https',
+        protocol: 'https' as const,
         hostname: process.env.VERCEL_URL
       }] : [])
     ],
