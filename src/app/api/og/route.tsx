@@ -4,13 +4,13 @@ import { NextRequest } from "next/server";
 
 export const runtime = "edge";
 
-// Define font loading
+// Fetch fonts from Google Fonts at runtime (not bundled)
 const interRegular = fetch(
-  new URL("../../../assets/fonts/Inter-Regular.ttf", import.meta.url)
+  "https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff"
 ).then((res) => res.arrayBuffer());
 
 const interBold = fetch(
-  new URL("../../../assets/fonts/Inter-Bold.ttf", import.meta.url)
+  "https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fAZ9hjp-Ek-_EeA.woff"
 ).then((res) => res.arrayBuffer());
 
 // Image metadata
@@ -227,7 +227,6 @@ export async function GET(request: NextRequest) {
         {
           width: size.width,
           height: size.height,
-          emoji: "twemoji",
           fonts: [
             {
               name: "Inter",
@@ -323,7 +322,6 @@ export async function GET(request: NextRequest) {
         {
           width: size.width,
           height: size.height,
-          emoji: "twemoji",
           fonts: [
             {
               name: "Inter",
